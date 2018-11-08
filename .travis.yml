@@ -1,5 +1,5 @@
 language: cpp
-compiler: clang
+compiler: gcc
 script: cd psicashlib/src/main/cpp/psicashlib && ./test.sh
 matrix:
   include:
