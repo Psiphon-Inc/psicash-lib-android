@@ -15,4 +15,4 @@ matrix:
 
 before_install:
     - eval "${MATRIX_EVAL}"
-    
+    - openssl aes-256-cbc -K $encrypted_9f360b3d7cd1_key -iv $encrypted_9f360b3d7cd1_iv -in psicashlib/src/main/cpp/psicashlib/SecretTestValues.h.enc -out psicashlib/src/main/cpp/psicashlib/SecretTestValues.h -d
