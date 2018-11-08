@@ -1,0 +1,3 @@
+language: cpp
+compiler: clang
+script: cd psicashlib/src/main/cpp/psicashlib && ./test.sh
