@@ -6,7 +6,7 @@ before_install:
 env:
   global:
   - ANDROID_API_LEVEL=23
-  - ANDROID_BUILD_TOOLS_VERSION=26.0.1
+  #- ANDROID_BUILD_TOOLS_VERSION=28.0.3
   - ANDROID_EMU_API_LEVEL=22
   - ANDROID_ABI=armeabi-v7a
   - ADB_INSTALL_TIMEOUT=20 # minutes (2 minutes by default)
@@ -27,11 +27,16 @@ android:
     - tools
     - platform-tools
     - tools
-    - build-tools-$ANDROID_BUILD_TOOLS_VERSION
+    #- build-tools-$ANDROID_BUILD_TOOLS_VERSION
     - android-$ANDROID_API_LEVEL
     - android-$ANDROID_EMU_API_LEVEL
     - extra-android-support
     - sys-img-$ANDROID_ABI-android-$ANDROID_EMU_API_LEVEL
+
+  licenses:
+    - 'android-sdk-license-.+'
+    - 'build-tools-.+'
+    - 'platforms;android-.+''
 
 # Emulator Management: Create, Start and Wait
 before_script:
