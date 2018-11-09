@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/Psiphon-Inc/psicash-lib-android.png)](https://travis-ci.org/Psiphon-Inc/psicash-lib-android)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FPsiphon-Inc%2Fpsicash-lib-android.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FPsiphon-Inc%2Fpsicash-lib-android?ref=badge_shield)
 
 # Android PsiCash Library
 
@@ -77,3 +78,7 @@ know what they're looking at.
 So I decided that writing the glue in a language we can understand (and
 are already using, and using the support libraries for) was preferable.
 The runtime-error problem can be mitigated with a test suite.
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FPsiphon-Inc%2Fpsicash-lib-android.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FPsiphon-Inc%2Fpsicash-lib-android?ref=badge_large)
