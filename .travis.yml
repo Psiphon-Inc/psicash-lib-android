@@ -6,8 +6,8 @@ android:
     - platform-tools
     - tools
 
-    - android-26
-    - sys-img-armeabi-v7a-android-26
+    - android-23
+    - sys-img-armeabi-v7a-android-23
 
 # Emulator Management: Create, Start and Wait
 before_script:
