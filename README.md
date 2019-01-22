@@ -47,7 +47,7 @@ There are two categories of errors:
 
         // If true, the error probably resulted from programmer error.
         // Logging and reporting should be handled differently.
-        "internal": boolean; true iff error is 'internal' and probably unrecoverable
+        "critical": boolean; true iff error is 'critical' and probably unrecoverable
     }
 
     "result": type varies; actual result of the call
@@ -57,10 +57,6 @@ There are two categories of errors:
 The authoritative definition of the return format for each API call will
 above the call stub in `PsiCashLib.java`. Description of the arguments
 to the call will also be there.
-
-Future note: It may be that end up wanting `error` to have a `type` field
-that indicates "bad input" or "internal problem", etc. This could maybe
-help the library consumer. It's also probably not limited to this JNI glue.
 
 ### Possibilities considered
 

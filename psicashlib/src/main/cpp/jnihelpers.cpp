@@ -75,17 +75,16 @@ nonstd::optional<std::string> JStringToString(JNIEnv* env, jstring j_s) {
 }
 
 string ErrorResponseFallback(const string& message) {
-    return "{\"error\":{\"message\":\""s + message + "\", \"internal\":true}}";
+    return "{\"error\":{\"message\":\""s + message + "\", \"critical\":true}}";
 }
 
-string ErrorResponse(const string& message,
-                     const string& filename, const string& function, int line,
-                     bool internal/*=false*/) {
+string ErrorResponse(bool critical, const string& message,
+                     const string& filename, const string& function, int line) {
     try {
         json j({{"error", nullptr}});
         if (!message.empty()) {
-            j["error"]["message"] = error::Error(message, filename, function, line).ToString();
-            j["error"]["internal"] = internal;
+            j["error"]["message"] = error::Error(critical, message, filename, function, line).ToString();
+            j["error"]["critical"] = critical;
         }
         return j.dump(-1, ' ', true);
     }
@@ -96,13 +95,12 @@ string ErrorResponse(const string& message,
 }
 
 string ErrorResponse(const error::Error& error, const string& message,
-                     const string& filename, const string& function, int line,
-                     bool internal/*=false*/) {
+                     const string& filename, const string& function, int line) {
     try {
         json j({{"error", nullptr}});
         if (error) {
             j["error"]["message"] = error::Error(error).Wrap(message, filename, function, line).ToString();
-            j["error"]["internal"] = internal;
+            j["error"]["critical"] = error.Critical();
         }
         return j.dump(-1, ' ', true);
     }
@@ -118,7 +116,7 @@ string SuccessResponse() {
 
 psicash::MakeHTTPRequestFn GetHTTPReqFn(JNIEnv* env, jobject& this_obj) {
     psicash::MakeHTTPRequestFn http_req_fn = [env, &this_obj = this_obj](const string& params) -> string {
-        json stub_result = {{"status", -1},
+        json stub_result = {{"code",   psicash::HTTPResult::CRITICAL_ERROR},
                             {"error",  nullptr},
                             {"body",   nullptr},
                             {"date",   nullptr}};
@@ -126,21 +124,21 @@ psicash::MakeHTTPRequestFn GetHTTPReqFn(JNIEnv* env, jobject& this_obj) {
         auto jParams = env->NewStringUTF(params.c_str());
         if (!jParams) {
             CheckJNIException(env);
-            stub_result["error"] = MakeError("NewStringUTF failed").ToString();
+            stub_result["error"] = MakeCriticalError("NewStringUTF failed").ToString();
             return stub_result.dump(-1, ' ', true);
         }
 
         auto jResult = (jstring)env->CallObjectMethod(this_obj, g_makeHTTPRequestMID, jParams);
         if (!jResult) {
             CheckJNIException(env);
-            stub_result["error"] = MakeError("CallObjectMethod failed").ToString();
+            stub_result["error"] = MakeCriticalError("CallObjectMethod failed").ToString();
             return stub_result.dump(-1, ' ', true);
         }
 
         auto resultCString = env->GetStringUTFChars(jResult, NULL);
         if (!resultCString) {
             CheckJNIException(env);
-            stub_result["error"] = MakeError("GetStringUTFChars failed").ToString();
+            stub_result["error"] = MakeCriticalError("GetStringUTFChars failed").ToString();
             return stub_result.dump(-1, ' ', true);
         }
 

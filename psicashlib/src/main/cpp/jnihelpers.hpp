@@ -49,9 +49,8 @@ nonstd::optional<std::string> JStringToString(JNIEnv* env, jstring j_s);
 
 /// Creates a JSON error string appropriate for a JNI response.
 /// If `message` is empty, the result will be a non-error.
-std::string ErrorResponse(const std::string& message,
-                     const std::string& filename, const std::string& function, int line,
-                     bool internal = false);
+std::string ErrorResponse(bool critical, const std::string& message,
+                     const std::string& filename, const std::string& function, int line);
 
 /// Used to return a JSON error without any potential marshaling exceptions.
 std::string ErrorResponseFallback(const std::string& message);
@@ -59,17 +58,14 @@ std::string ErrorResponseFallback(const std::string& message);
 /// Creates a JSON error string appropriate for a JNI response. `error` is wrapped.
 /// If `error` is a non-error, the result will be a non-error.
 std::string ErrorResponse(const error::Error& error, const std::string& message,
-                     const std::string& filename, const std::string& function, int line,
-                     bool internal = false);
+                     const std::string& filename, const std::string& function, int line);
 
-#define ERROR(msg)                      (ErrorResponse(msg, __FILE__, __PRETTY_FUNCTION__, __LINE__).c_str())
-#define ERROR_INTERNAL(msg)             (ErrorResponse(msg, __FILE__, __PRETTY_FUNCTION__, __LINE__, true).c_str())
-#define WRAP_ERROR1(err, msg)           (ErrorResponse(err, msg, __FILE__, __PRETTY_FUNCTION__, __LINE__).c_str())
-#define WRAP_ERROR(err)                 WRAP_ERROR1(err, "")
-#define WRAP_ERROR1_INTERNAL(err, msg)  (ErrorResponse(err, msg, __FILE__, __PRETTY_FUNCTION__, __LINE__, true).c_str())
-#define WRAP_ERROR_INTERNAL(err)        WRAP_ERROR1_INTERNAL(err, "")
-#define JNI_(str)                       (str ? env->NewStringUTF(str) : nullptr)
-#define JNI_s(str)                      (!str.empty() ? env->NewStringUTF(str.c_str()) : nullptr)
+#define ERROR_NONCRITICAL(msg)  (ErrorResponse(false, msg, __FILE__, __PRETTY_FUNCTION__, __LINE__).c_str())
+#define ERROR_CRITICAL(msg)     (ErrorResponse(true, msg, __FILE__, __PRETTY_FUNCTION__, __LINE__).c_str())
+#define WRAP_ERROR1(err, msg)   (ErrorResponse(err, msg, __FILE__, __PRETTY_FUNCTION__, __LINE__).c_str())
+#define WRAP_ERROR(err)         WRAP_ERROR1(err, "")
+#define JNI_(str)               (str ? env->NewStringUTF(str) : nullptr)
+#define JNI_s(str)              (!str.empty() ? env->NewStringUTF(str.c_str()) : nullptr)
 
 /// Create a JNI success response.
 template<typename T>
@@ -79,7 +75,7 @@ std::string SuccessResponse(T res) {
         return j.dump(-1, ' ', true);
     }
     catch (nlohmann::json::exception& e) {
-        return ERROR(
+        return ERROR_CRITICAL(
                 utils::Stringer("SuccessResponse json dump failed: ", e.what(), "; id:", e.id).c_str());
     }
 }
