@@ -26,6 +26,7 @@
 #include "vendor/nonstd/optional.hpp"
 #include "error.hpp"
 #include "psicash.hpp"
+#include "utils.hpp"
 
 
 /// Indicates if we're running in testing mode.
