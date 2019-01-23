@@ -28,10 +28,10 @@ public class MainActivity extends AppCompatActivity {
         PsiCashLib.Error err = psiCashLib.init(getFilesDir().toString(), new PsiCashLibHelper());
         if (err != null) {
             Log.e("temptag", err.message);
+            return;
         }
-        else {
-            new NetworkTask().execute();
-        }
+
+        new NetworkTask().execute();
     }
 
     private class NetworkTask extends AsyncTask<Void, Void, String> {

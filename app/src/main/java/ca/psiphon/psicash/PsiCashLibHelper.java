@@ -69,13 +69,13 @@ public class PsiCashLibHelper implements PsiCashLib.HTTPRequester {
         catch (IOException e) {
             Log.e("PsiCashLibHelper", "httpRequest: failed with IOException ", e);
             res.error = "httpRequest: failed with IOException: " + e.toString();
-            res.code = -1;
+            res.code = Result.RECOVERABLE_ERROR;
             res.body = null;
         }
         catch (RuntimeException e) {
             Log.e("PsiCashLibHelper", "httpRequest: failed with RuntimeException ", e);
             res.error = "httpRequest: failed with RuntimeException: " + e.toString();
-            res.code = -1;
+            res.code = Result.CRITICAL_ERROR;
             res.body = null;
         }
         finally {
