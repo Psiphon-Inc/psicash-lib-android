@@ -115,37 +115,75 @@ string SuccessResponse() {
 }
 
 psicash::MakeHTTPRequestFn GetHTTPReqFn(JNIEnv* env, jobject& this_obj) {
-    psicash::MakeHTTPRequestFn http_req_fn = [env, &this_obj = this_obj](const string& params) -> string {
-        json stub_result = {{"code",   psicash::HTTPResult::CRITICAL_ERROR},
-                            {"error",  nullptr},
-                            {"body",   nullptr},
-                            {"date",   nullptr}};
+    psicash::MakeHTTPRequestFn http_req_fn = [env, &this_obj = this_obj](const psicash::HTTPParams& params) -> psicash::HTTPResult {
+        psicash::HTTPResult error_result;
+        error_result.code = psicash::HTTPResult::CRITICAL_ERROR;
 
-        auto jParams = env->NewStringUTF(params.c_str());
-        if (!jParams) {
-            CheckJNIException(env);
-            stub_result["error"] = MakeCriticalError("NewStringUTF failed").ToString();
-            return stub_result.dump(-1, ' ', true);
+        string params_json;
+        try {
+            json j = {
+                {"scheme", params.scheme},
+                {"hostname", params.hostname},
+                {"port", params.port},
+                {"method", params.method},
+                {"path", params.path},
+                {"headers", params.headers},
+                {"query", params.query}};
+
+            params_json = j.dump(-1, ' ', true);
+        }
+        catch (json::exception& e) {
+            error_result.error = MakeCriticalError(utils::Stringer(
+                "ErrorResponse json dump failed: ", e.what(), "; id:", e.id)).ToString();
+            return error_result;
         }
 
-        auto jResult = (jstring)env->CallObjectMethod(this_obj, g_makeHTTPRequestMID, jParams);
-        if (!jResult) {
+        auto j_params = env->NewStringUTF(params_json.c_str());
+        if (!j_params) {
             CheckJNIException(env);
-            stub_result["error"] = MakeCriticalError("CallObjectMethod failed").ToString();
-            return stub_result.dump(-1, ' ', true);
+            error_result.error = MakeCriticalError("NewStringUTF failed").ToString();
+            return error_result;
         }
 
-        auto resultCString = env->GetStringUTFChars(jResult, NULL);
-        if (!resultCString) {
+        auto j_result = (jstring)env->CallObjectMethod(this_obj, g_makeHTTPRequestMID, j_params);
+        if (!j_result) {
             CheckJNIException(env);
-            stub_result["error"] = MakeCriticalError("GetStringUTFChars failed").ToString();
-            return stub_result.dump(-1, ' ', true);
+            error_result.error = MakeCriticalError("CallObjectMethod failed").ToString();
+            return error_result;
         }
 
-        auto result = string(resultCString);
-        env->ReleaseStringUTFChars(jResult, resultCString);
+        auto result_json = JStringToString(env, j_result);
+        if (!result_json) {
+            CheckJNIException(env);
+            error_result.error = MakeCriticalError("JStringToString failed").ToString();
+            return error_result;
+        }
 
-        return result;
+        try {
+            auto j = json::parse(*result_json);
+
+            psicash::HTTPResult result;
+            result.code = j["code"].get<int>();
+
+            if (!j["body"].is_null()) {
+                result.body = j["body"].get<string>();
+            }
+
+            if (!j["date"].is_null()) {
+                result.date = j["date"].get<string>();
+            }
+
+            if (!j["error"].is_null()) {
+                result.error = j["error"].get<string>();
+            }
+
+            return result;
+        }
+        catch (json::exception& e) {
+            error_result.error = MakeCriticalError(utils::Stringer(
+                "json parse failed: ", e.what(), "; id:", e.id)).ToString();
+            return error_result;
+        }
     };
 
     return http_req_fn;

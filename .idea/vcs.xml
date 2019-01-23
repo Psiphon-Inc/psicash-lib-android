@@ -2,6 +2,7 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/psicashlib/src/main/cpp/psicashlib" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/psicashlib/src/main/cpp/psicashlib/build/googletest-src" vcs="Git" />
   </component>
 </project>
