@@ -1,0 +1,3 @@
+[submodule "psicashlib/src/main/cpp/psicashlib"]
+	path = psicashlib/src/main/cpp/psicashlib
+	url = https://github.com/Psiphon-Inc/psicash-lib-core.git

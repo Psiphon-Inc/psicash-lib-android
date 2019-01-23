@@ -67,7 +67,10 @@ public class PsiCashLib {
          * The output from the HTTP requester.
          */
         class Result {
-            public int code = -1; // -1 indicates error trying to make the request
+            // On successful request: 200, 404, etc.
+            // If unable to reach server (or some other probably-recoverable error): -1
+            // On critical error (e.g., programming fault or out-of-memory): -2
+            public int code = -2;
             public String body;
             public String date;
             public String error;
@@ -95,7 +98,7 @@ public class PsiCashLib {
     // Common fields in the JNI glue messages.
     private static final String kErrorKey = "error";
     private static final String kErrorMessageKey = "message";
-    private static final String kErrorInternalKey = "internal";
+    private static final String kErrorCriticalKey = "critical";
     private static final String kResultKey = "result";
     private static final String kStatusKey = "status";
 
@@ -137,14 +140,14 @@ public class PsiCashLib {
     public static class Error {
         @NonNull // If Error is set, it must have a message
         public String message;
-        public boolean internal;
+        public boolean critical;
 
         public Error() {
         }
 
-        public Error(String message, boolean internal) {
+        public Error(String message, boolean critical) {
             this.message = message;
-            this.internal = internal;
+            this.critical = critical;
         }
 
         public Error(String message) {
@@ -168,8 +171,8 @@ public class PsiCashLib {
                 return null;
             }
 
-            Boolean internal = JSON.nullableBoolean(errorObj, kErrorInternalKey);
-            error.internal = internal != null && internal;
+            Boolean critical = JSON.nullableBoolean(errorObj, kErrorCriticalKey);
+            error.critical = critical != null && critical;
 
             return error;
         }
@@ -685,57 +688,65 @@ public class PsiCashLib {
     public String makeHTTPRequest(String jsonReqParams) {
         HTTPRequester.Result result = new HTTPRequester.Result();
 
-        HTTPRequester.ReqParams reqParams = new HTTPRequester.ReqParams();
-        Uri.Builder uriBuilder = new Uri.Builder();
-        reqParams.headers = new HashMap<>();
-
         try {
-            JSONObject json = new JSONObject(jsonReqParams);
-            uriBuilder.scheme(JSON.nonnullString(json, "scheme"));
-            String hostname = JSON.nonnullString(json, "hostname");
-            Integer port = JSON.nullableInteger(json, "port");
-            if (port != null) {
-                hostname += ":" + port;
-            }
+            HTTPRequester.ReqParams reqParams = new HTTPRequester.ReqParams();
+            Uri.Builder uriBuilder = new Uri.Builder();
+            reqParams.headers = new HashMap<>();
 
-            uriBuilder.encodedAuthority(hostname);
-            reqParams.method = JSON.nonnullString(json, "method");
-            uriBuilder.encodedPath(JSON.nonnullString(json, "path"));
-
-            JSONObject jsonHeaders = JSON.nullableObject(json, "headers");
-            if (jsonHeaders != null) {
-                Iterator<?> headerKeys = jsonHeaders.keys();
-                while (headerKeys.hasNext()) {
-                    String key = (String)headerKeys.next();
-                    String value = JSON.nonnullString(jsonHeaders, key);
-                    reqParams.headers.put(key, value);
+            try {
+                JSONObject json = new JSONObject(jsonReqParams);
+                uriBuilder.scheme(JSON.nonnullString(json, "scheme"));
+                String hostname = JSON.nonnullString(json, "hostname");
+                Integer port = JSON.nullableInteger(json, "port");
+                if (port != null) {
+                    hostname += ":" + port;
                 }
+
+                uriBuilder.encodedAuthority(hostname);
+                reqParams.method = JSON.nonnullString(json, "method");
+                uriBuilder.encodedPath(JSON.nonnullString(json, "path"));
+
+                JSONObject jsonHeaders = JSON.nullableObject(json, "headers");
+                if (jsonHeaders != null) {
+                    Iterator<?> headerKeys = jsonHeaders.keys();
+                    while (headerKeys.hasNext()) {
+                        String key = (String)headerKeys.next();
+                        String value = JSON.nonnullString(jsonHeaders, key);
+                        reqParams.headers.put(key, value);
+                    }
+                }
+
+                // Query params are an array of arrays of 2 strings.
+                JSONArray jsonQueryParams = JSON.nullableArray(json, "query");
+                if (jsonQueryParams != null) {
+                    for (int i = 0; i < jsonQueryParams.length(); i++) {
+                        JSONArray param = JSON.nonnullArray(jsonQueryParams, i);
+                        String key = JSON.nullableString(param, 0);
+                        String value = JSON.nullableString(param, 1);
+                        uriBuilder.appendQueryParameter(key, value);
+                    }
+                }
+            } catch (JSONException e) {
+                result.error = "Parsing request object failed: " + e.toString();
+                return result.toJSON();
             }
 
-            // Query params are an array of arrays of 2 strings.
-            JSONArray jsonQueryParams = JSON.nullableArray(json, "query");
-            if (jsonQueryParams != null) {
-                for (int i = 0; i < jsonQueryParams.length(); i++) {
-                    JSONArray param = JSON.nonnullArray(jsonQueryParams, i);
-                    String key = JSON.nullableString(param, 0);
-                    String value = JSON.nullableString(param, 1);
-                    uriBuilder.appendQueryParameter(key, value);
-                }
+            reqParams.uri = uriBuilder.build();
+
+            result = httpRequester.httpRequest(reqParams);
+
+            // Check for consistency in the result.
+            // Ensure sanity if there's an error: code must be negative iff there's an error message
+            if ((result.code < 0) != (result.error != null && !result.error.isEmpty())) {
+                result.code = -2;
+                result.error = "Request result is not in sane error state: " + result.toString();
             }
-        } catch (JSONException e) {
-            result.error = "Parsing request object failed: " + e.toString();
-            return result.toJSON();
         }
-
-        reqParams.uri = uriBuilder.build();
-
-        result = httpRequester.httpRequest(reqParams);
-
-        // Check for consistency in the result.
-        // Ensure sanity if there's an error: code must be -1 iff there's an error message
-        if ((result.code == -1) != (result.error != null && !result.error.isEmpty())) {
-            result.code = -1;
-            result.error = "Request result is not in sane error state: " + result.toString();
+        catch (Throwable throwable) {
+            // A runtime exception got thrown, probably from the requester. This can happen
+            // if called from the main thread, for example.
+            result.code = -2;
+            result.error = "httpRequester threw runtime exception:" + throwable.getMessage();
         }
 
         return result.toJSON();
@@ -1284,7 +1295,7 @@ public class PsiCashLib {
         {
             "error": {      null or absent iff no error
                 "message":  string; nonempty (if error object present)
-                "internal": boolean; true iff error is 'internal' and probably unrecoverable
+                "critical": boolean; true iff error is 'critical' and probably unrecoverable
             }
 
             "result":       type varies; actual result of the call

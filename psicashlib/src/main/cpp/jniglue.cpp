@@ -61,12 +61,12 @@ Java_ca_psiphon_psicashlib_PsiCashLib_NativeObjectInit(
     g_testing = test;
 
     if (!j_file_store_root) {
-        return JNI_(ERROR("j_file_store_root is null"));
+        return JNI_(ERROR_CRITICAL("j_file_store_root is null"));
     }
 
     auto file_store_root = JStringToString(env, j_file_store_root);
     if (!file_store_root) {
-        return JNI_(ERROR("file_store_root is invalid"));
+        return JNI_(ERROR_CRITICAL("file_store_root is invalid"));
     }
 
     // We can't set the HTTP requester function yet, as we can't cache `this_obj`.
@@ -88,7 +88,7 @@ Java_ca_psiphon_psicashlib_PsiCashLib_NativeSetRequestMetadataItem(
     auto key = JStringToString(env, j_key);
     auto value = JStringToString(env, j_value);
     if (!key || !value) {
-        return JNI_(ERROR("key and value must be non-null"));
+        return JNI_(ERROR_CRITICAL("key and value must be non-null"));
     }
 
     return JNI_(WRAP_ERROR(GetPsiCash().SetRequestMetadataItem(*key, *value)));
@@ -209,7 +209,7 @@ Java_ca_psiphon_psicashlib_PsiCashLib_NativeModifyLandingPage(
         jstring j_url) {
     auto url = JStringToString(env, j_url);
     if (!url) {
-        return JNI_(ERROR("url is required"));
+        return JNI_(ERROR_CRITICAL("url is required"));
     }
 
     auto result = GetPsiCash().ModifyLandingPage(*url);
@@ -299,7 +299,7 @@ Java_ca_psiphon_psicashlib_PsiCashLib_NativeNewExpiringPurchase(
     int64_t expected_price = j_expected_price;
 
     if (!transaction_class || !distinguisher) {
-        return JNI_(ERROR("transaction and distinguisher are required"));
+        return JNI_(ERROR_CRITICAL("transaction and distinguisher are required"));
     }
 
     GetPsiCash().SetHTTPRequestFn(GetHTTPReqFn(env, this_obj));
