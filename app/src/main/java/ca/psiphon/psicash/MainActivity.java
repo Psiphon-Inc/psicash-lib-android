@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
         psiCashLib = new PsiCashLib();
         PsiCashLib.Error err = psiCashLib.init(getFilesDir().toString(), new PsiCashLibHelper());
         if (err != null) {
-            Log.e("temptag", err.message);
+            Log.e("PsiCashApp", err.message);
             return;
         }
 
@@ -40,12 +40,12 @@ public class MainActivity extends AppCompatActivity {
         protected String doInBackground(Void... params) {
             PsiCashLib.Error error = psiCashLib.setRequestMetadataItem("metadatakey", "metadatavalue");
             if (error != null) {
-                Log.e("temptag", error.message);
+                Log.e("PsiCashApp", error.message);
             }
 
             error = psiCashLib.setRequestMetadataItem(null, "blah"); //erroneous
             if (error != null) {
-                Log.e("temptag", error.message);
+                Log.e("PsiCashApp", error.message);
             }
 
             List<String> purchaseClasses = new ArrayList<>(Arrays.asList("speed-boost"));

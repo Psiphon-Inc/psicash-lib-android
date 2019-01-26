@@ -30,7 +30,7 @@ using json = nlohmann::json;
 #define HTTP_REQUEST_FN_NAME    "makeHTTPRequest"
 #define HTTP_REQUEST_FN_SIG     "(Ljava/lang/String;)Ljava/lang/String;"
 
-static constexpr const char* kPsiCashUserAgent = "Psiphon-PsiCash-iOS"; // TODO: UPDATE FOR ANDROID
+static constexpr const char* kPsiCashUserAgent = "Psiphon-PsiCash-Android";
 
 using namespace std;
 using namespace psicash;
