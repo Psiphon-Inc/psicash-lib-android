@@ -57,7 +57,7 @@ std::string ErrorResponseFallback(const std::string& message);
 
 /// Creates a JSON error string appropriate for a JNI response. `error` is wrapped.
 /// If `error` is a non-error, the result will be a non-error.
-std::string ErrorResponse(const error::Error& error, const std::string& message,
+std::string ErrorResponse(const psicash::error::Error& error, const std::string& message,
                      const std::string& filename, const std::string& function, int line);
 
 #define ERROR_NONCRITICAL(msg)  (ErrorResponse(false, msg, __FILE__, __PRETTY_FUNCTION__, __LINE__).c_str())
