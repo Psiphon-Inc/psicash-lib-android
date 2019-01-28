@@ -55,7 +55,7 @@ public class PsiCashLib {
         Result httpRequest(ReqParams reqParams);
 
         /**
-         * The input to the HTTP requseter.
+         * The input to the HTTP requester.
          */
         class ReqParams {
             public String method;
@@ -67,10 +67,13 @@ public class PsiCashLib {
          * The output from the HTTP requester.
          */
         class Result {
+            public static final int CRITICAL_ERROR = -2;
+            public static final int RECOVERABLE_ERROR = -1;
+
             // On successful request: 200, 404, etc.
-            // If unable to reach server (or some other probably-recoverable error): -1
-            // On critical error (e.g., programming fault or out-of-memory): -2
-            public int code = -2;
+            // If unable to reach server (or some other probably-recoverable error): RECOVERABLE_ERROR
+            // On critical error (e.g., programming fault or out-of-memory): CRITICAL_ERROR
+            public int code = CRITICAL_ERROR;
             public String body;
             public String date;
             public String error;
