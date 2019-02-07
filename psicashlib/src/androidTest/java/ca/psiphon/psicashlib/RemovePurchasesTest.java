@@ -19,28 +19,37 @@ public class RemovePurchasesTest extends TestBase {
         // Test with both null param and empty array, as the code path is different
 
         // Default value, before the first RefreshState
-        err = pcl.removePurchases(null);
-        assertNull(err);
-        err = pcl.removePurchases(new ArrayList<>());
-        assertNull(err);
+        // Null ID array
+        PsiCashLib.RemovePurchasesResult rpr = pcl.removePurchases(null);
+        assertNull(conds(rpr.error, "message"), rpr.error);
+        assertEquals(0, rpr.purchases.size());
+        // Empty ID array
+        rpr = pcl.removePurchases(new ArrayList<>());
+        assertNull(conds(rpr.error, "message"), rpr.error);
+        assertEquals(0, rpr.purchases.size());
 
         // First RefreshState, which creates the tracker
         PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
-        err = pcl.removePurchases(null);
-        assertNull(err);
-        err = pcl.removePurchases(new ArrayList<>());
-        assertNull(err);
+        // Null ID array
+        rpr = pcl.removePurchases(null);
+        assertNull(conds(rpr.error, "message"), rpr.error);
+        assertEquals(0, rpr.purchases.size());
+        rpr = pcl.removePurchases(new ArrayList<>());
+        assertNull(conds(rpr.error, "message"), rpr.error);
+        assertEquals(0, rpr.purchases.size());
 
         // Second RefreshState, which just refreshes
         res = pcl.refreshState(null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
-        err = pcl.removePurchases(null);
-        assertNull(err);
-        err = pcl.removePurchases(new ArrayList<>());
-        assertNull(err);
+        rpr = pcl.removePurchases(null);
+        assertNull(conds(rpr.error, "message"), rpr.error);
+        assertEquals(0, rpr.purchases.size());
+        rpr = pcl.removePurchases(new ArrayList<>());
+        assertNull(conds(rpr.error, "message"), rpr.error);
+        assertEquals(0, rpr.purchases.size());
     }
 
     @Test
@@ -76,8 +85,9 @@ public class RemovePurchasesTest extends TestBase {
         assertEquals(3, gpr.purchases.size());
 
         // Try removing a nonexistent purchase; expect no error but no change
-        err = pcl.removePurchases(Arrays.asList("nonexistent"));
-        assertNull(err);
+        PsiCashLib.RemovePurchasesResult rpr = pcl.removePurchases(Arrays.asList("nonexistent"));
+        assertNull(conds(rpr.error, "message"), rpr.error);
+        assertEquals(0, rpr.purchases.size());
         gpr = pcl.getPurchases();
         assertNull(gpr.error);
         assertEquals(3, gpr.purchases.size());
@@ -85,24 +95,27 @@ public class RemovePurchasesTest extends TestBase {
         // Remove two of the purchases
         List<String> purchasesToRemove = Arrays.asList(gpr.purchases.get(0).id, gpr.purchases.get(2).id);
         String remainingPurchaseID = gpr.purchases.get(1).id;
-        err = pcl.removePurchases(purchasesToRemove);
-        assertNull(err);
+        rpr = pcl.removePurchases(purchasesToRemove);
+        assertNull(conds(rpr.error, "message"), rpr.error);
+        assertEquals(2, rpr.purchases.size());
         gpr = pcl.getPurchases();
         assertNull(gpr.error);
         assertEquals(1, gpr.purchases.size());
         assertEquals(remainingPurchaseID, gpr.purchases.get(0).id);
 
         // Try to remove those purchases again; expect no error but no change
-        err = pcl.removePurchases(purchasesToRemove);
-        assertNull(err);
+        rpr = pcl.removePurchases(purchasesToRemove);
+        assertNull(conds(rpr.error, "message"), rpr.error);
+        assertEquals(0, rpr.purchases.size());
         gpr = pcl.getPurchases();
         assertNull(gpr.error);
         assertEquals(1, gpr.purchases.size());
         assertEquals(remainingPurchaseID, gpr.purchases.get(0).id);
 
         // Remove the final purchase
-        err = pcl.removePurchases(Arrays.asList(remainingPurchaseID));
-        assertNull(err);
+        rpr = pcl.removePurchases(Arrays.asList(remainingPurchaseID));
+        assertNull(conds(rpr.error, "message"), rpr.error);
+        assertEquals(1, rpr.purchases.size());
         gpr = pcl.getPurchases();
         assertNull(gpr.error);
         assertEquals(0, gpr.purchases.size());

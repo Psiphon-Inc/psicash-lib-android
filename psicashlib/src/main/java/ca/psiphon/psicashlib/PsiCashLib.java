@@ -512,17 +512,34 @@ public class PsiCashLib {
      * expired (even if the local clock hasn't yet indicated it).
      * @param transactionIDs List of transaction IDs of purchases to remove. IDs not being
      *                       found does _not_ result in an error.
-     * @return null if success; Error otherwise.
+     * @return List will contain the purchases that were removed. Passing IDs that don't
+     *         exist does not result in an error.
      */
     @Nullable
-    synchronized public Error removePurchases(List<String> transactionIDs) {
-        if (transactionIDs == null) {
-            return null;
+    synchronized public RemovePurchasesResult removePurchases(List<String> transactionIDs) {
+        String[] idsArray = null;
+        if (transactionIDs != null) {
+            idsArray = transactionIDs.toArray(new String[0]);
         }
-        String[] idsArray = transactionIDs.toArray(new String[0]);
         String jsonStr = this.NativeRemovePurchases(idsArray);
-        JNI.Result.ErrorOnly res = new JNI.Result.ErrorOnly(jsonStr);
-        return res.error;
+        JNI.Result.RemovePurchases res = new JNI.Result.RemovePurchases(jsonStr);
+        return new RemovePurchasesResult(res);
+
+    }
+
+    public static class RemovePurchasesResult {
+        // Null if storage writing problem or glue problem.
+        public Error error;
+        // Null iff error (which is not expected). Contains the removed purchases.
+        public List<Purchase> purchases;
+
+        RemovePurchasesResult(JNI.Result.RemovePurchases res) {
+            this.error = res.error;
+            if (this.error != null) {
+                return;
+            }
+            this.purchases = res.purchases;
+        }
     }
 
     /**
@@ -916,6 +933,20 @@ public class PsiCashLib {
                 List<Purchase> purchases;
 
                 public ExpirePurchases(String jsonStr) {
+                    super(jsonStr);
+                }
+
+                @Override
+                public void fromJSON(JSONObject json, String key) {
+                    this.purchases = JSON.nullableList(
+                            PsiCashLib.Purchase.class, json, key, PsiCashLib.Purchase::fromJSON, true);
+                }
+            }
+
+            private static class RemovePurchases extends Base {
+                List<Purchase> purchases;
+
+                public RemovePurchases(String jsonStr) {
                     super(jsonStr);
                 }
 

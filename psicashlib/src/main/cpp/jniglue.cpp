@@ -194,11 +194,11 @@ Java_ca_psiphon_psicashlib_PsiCashLib_NativeRemovePurchases(
         }
     }
 
-    auto err = GetPsiCash().RemovePurchases(ids);
-    if (err) {
-        return JNI_(WRAP_ERROR(err));
+    auto result = GetPsiCash().RemovePurchases(ids);
+    if (!result) {
+        return JNI_(WRAP_ERROR(result.error()));
     }
-    return JNI_s(SuccessResponse());
+    return JNI_s(SuccessResponse(*result));
 }
 
 extern "C" JNIEXPORT jstring
