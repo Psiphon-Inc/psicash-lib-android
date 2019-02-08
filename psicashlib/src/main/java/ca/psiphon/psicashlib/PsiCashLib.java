@@ -29,13 +29,7 @@ import org.json.JSONObject;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -1232,10 +1226,12 @@ public class PsiCashLib {
 
             // We need to try different formats depending on the presence of milliseconds.
             SimpleDateFormat isoFormatWithMS = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SSS'Z'", Locale.US);
+            isoFormatWithMS.setTimeZone(TimeZone.getTimeZone("UTC"));
             try {
                 date = isoFormatWithMS.parse(dateString);
             } catch (ParseException e1) {
                 SimpleDateFormat isoFormatWithoutMS = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss'Z'", Locale.US);
+                isoFormatWithMS.setTimeZone(TimeZone.getTimeZone("UTC"));
                 try {
                     date = isoFormatWithoutMS.parse(dateString);
                 } catch (ParseException e2) {

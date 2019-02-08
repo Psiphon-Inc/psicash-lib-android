@@ -3,6 +3,7 @@ package ca.psiphon.psicashlib;
 import org.junit.*;
 
 import java.util.Arrays;
+import java.util.Date;
 
 import static ca.psiphon.psicashlib.SecretTestValues.*;
 import static org.hamcrest.Matchers.*;
@@ -34,6 +35,11 @@ public class NewExpiringPurchaseTest extends TestBase {
         assertNull(nepr.purchase.authorization);
         assertEquals(nepr.purchase.transactionClass, TEST_DEBIT_TRANSACTION_CLASS);
         assertEquals(nepr.purchase.distinguisher, TEST_ONE_TRILLION_ONE_MICROSECOND_DISTINGUISHER);
+        // Ensure the expiry time is near now (tests fix for https://github.com/Psiphon-Inc/psiphon-issues/issues/504)
+        // This is brittle, as it depends on server-local clock skew, and the time zone
+        // in which the test is run. If run in EST and time zone setting is broken, the
+        // difference will be in the millions.
+        assertThat(nepr.purchase.expiry.getTime() - new Date().getTime(), allOf(greaterThan(-10000L), lessThan(10000L)));
 
         // Make another purchase
         nepr = pcl.newExpiringPurchase(TEST_DEBIT_TRANSACTION_CLASS, TEST_ONE_TRILLION_TEN_MICROSECOND_DISTINGUISHER, ONE_TRILLION);
