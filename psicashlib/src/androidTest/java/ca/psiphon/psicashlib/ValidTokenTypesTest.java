@@ -5,6 +5,7 @@ import org.junit.*;
 
 import java.util.List;
 
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 public class ValidTokenTypesTest extends TestBase {
@@ -26,6 +27,7 @@ public class ValidTokenTypesTest extends TestBase {
         vttr = pcl.validTokenTypes();
         assertNull(vttr.error);
         assertEquals(3, vttr.validTokenTypes.size());
+        assertThat(vttr.validTokenTypes, containsInAnyOrder(PsiCashLib.TokenType.fromName("earner"), PsiCashLib.TokenType.fromName("spender"), PsiCashLib.TokenType.fromName("indicator")));
         List<TokenType> firstVTT = vttr.validTokenTypes;
 
         // Second RefreshState, which just refreshes
@@ -35,12 +37,14 @@ public class ValidTokenTypesTest extends TestBase {
         vttr = pcl.validTokenTypes();
         assertNull(vttr.error);
         assertEquals(3, vttr.validTokenTypes.size());
+        assertThat(vttr.validTokenTypes, containsInAnyOrder(PsiCashLib.TokenType.fromName("earner"), PsiCashLib.TokenType.fromName("spender"), PsiCashLib.TokenType.fromName("indicator")));
         assertEquals(firstVTT, vttr.validTokenTypes);
 
         // Another access, without a RefreshState
         vttr = pcl.validTokenTypes();
         assertNull(vttr.error);
         assertEquals(3, vttr.validTokenTypes.size());
+        assertThat(vttr.validTokenTypes, containsInAnyOrder(PsiCashLib.TokenType.fromName("earner"), PsiCashLib.TokenType.fromName("spender"), PsiCashLib.TokenType.fromName("indicator")));
         assertEquals(firstVTT, vttr.validTokenTypes);
     }
 }
