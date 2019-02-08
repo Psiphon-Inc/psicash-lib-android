@@ -240,7 +240,7 @@ public class PsiCashLib {
             p.id = JSON.nonnullString(json, "id");
             p.transactionClass = JSON.nonnullString(json, "class");
             p.distinguisher = JSON.nonnullString(json, "distinguisher");
-            p.expiry = JSON.nullableDate(json, "serverTimeExpiry");
+            p.expiry = JSON.nullableDate(json, "localTimeExpiry");
             p.authorization = JSON.nullableString(json, "authorization");
             return p;
         }
