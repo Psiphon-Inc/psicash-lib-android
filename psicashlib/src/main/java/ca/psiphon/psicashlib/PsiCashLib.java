@@ -851,8 +851,16 @@ public class PsiCashLib {
 
                 @Override
                 public void fromJSON(JSONObject json, String key) {
-                    // Allow for an null list (probably won't happen, but could represent no valid token types)
-                    this.validTokenTypes = JSON.nullableList(TokenType.class, json, key);
+                    // Allow for an null list (probably won't happen, but could represent no valid token types).
+                    // We can't pass TokenType.class to JSON.nullableList as it's an enum
+                    // and we'll get null back.
+                    List<String> vttStrings = JSON.nullableList(String.class, json, key);
+                    if (vttStrings != null) {
+                        this.validTokenTypes = new ArrayList<>(vttStrings.size());
+                        for (int i = 0; i < vttStrings.size(); i++) {
+                            this.validTokenTypes.add(i, TokenType.fromName(vttStrings.get(i)));
+                        }
+                    }
                 }
             }
 
@@ -1302,10 +1310,7 @@ public class PsiCashLib {
                 return null;
             }
 
-            if (!clazz.isAssignableFrom(o.getClass())) {
-                // TODO: Log?
-                return null;
-            }
+            assert clazz.isAssignableFrom(o.getClass());
 
             return clazz.cast(o);
         }
