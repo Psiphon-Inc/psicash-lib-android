@@ -48,6 +48,22 @@ android {
     }
 }
 
+task recordGitVersion << {
+    def gitVer = new ByteArrayOutputStream()
+
+    exec {
+        commandLine "git", "describe", "--always", "--long", "--dirty", "--tags"
+        standardOutput = gitVer
+    }
+
+    new File("$projectDir/src/main/assets/git.txt").text = gitVer.toString().trim()
+}
+
+afterEvaluate { project ->
+    assembleRelease.dependsOn tasks.getByName('recordGitVersion')
+    assembleDebug.dependsOn tasks.getByName('recordGitVersion')
+}
+
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'com.android.support:appcompat-v7:23.4.0'
