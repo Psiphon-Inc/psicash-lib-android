@@ -72,13 +72,6 @@ public class PsiCashLibHelper implements PsiCashLib.HTTPRequester {
             res.code = Result.RECOVERABLE_ERROR;
             res.body = null;
         }
-        catch (RuntimeException e) {
-            // The Java library glue also catches Throwable, so this catch isn't really necessary.
-            Log.e("PsiCashLibHelper", "httpRequest: failed with RuntimeException ", e);
-            res.error = "httpRequest: failed with RuntimeException: " + e.toString();
-            res.code = Result.CRITICAL_ERROR;
-            res.body = null;
-        }
         finally {
             if (urlConn != null) {
                 urlConn.disconnect();
