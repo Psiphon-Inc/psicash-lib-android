@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -xeuo pipefail
 
-git describe --always --long --dirty --tags > ./psicashlib/src/main/assets/git.txt
+# This is surely brittle and will need to change as cmake updates.
+echo y | sdkmanager "cmake;3.6.4111459"
 
 ./gradlew :psicashlib:clean
 ./gradlew :psicashlib:assembleDebug :psicashlib:assembleRelease
