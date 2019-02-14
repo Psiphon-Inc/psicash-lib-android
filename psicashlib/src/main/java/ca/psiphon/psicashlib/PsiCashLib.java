@@ -752,15 +752,15 @@ public class PsiCashLib {
             // Check for consistency in the result.
             // Ensure sanity if there's an error: code must be negative iff there's an error message
             if ((result.code < 0) != (result.error != null && !result.error.isEmpty())) {
-                result.code = -2;
+                result.code = HTTPRequester.Result.CRITICAL_ERROR;
                 result.error = "Request result is not in sane error state: " + result.toString();
             }
         }
         catch (Throwable throwable) {
             // A runtime exception got thrown, probably from the requester. This can happen
             // if called from the main thread, for example.
-            result.code = -2;
-            result.error = "httpRequester threw runtime exception:" + throwable.getMessage();
+            result.code = HTTPRequester.Result.CRITICAL_ERROR;
+            result.error = "httpRequester threw runtime exception: " + throwable.getMessage();
         }
 
         return result.toJSON();
