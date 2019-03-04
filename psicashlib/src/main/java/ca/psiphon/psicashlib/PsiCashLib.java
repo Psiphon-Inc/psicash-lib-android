@@ -257,6 +257,7 @@ public class PsiCashLib {
         public String id;
         public String accessType;
         public Date expires;
+        public String encoded;
 
         static Authorization fromJSON(JSONObject json) throws JSONException {
             if (json == null) {
@@ -266,6 +267,7 @@ public class PsiCashLib {
             auth.id = JSON.nonnullString(json, "ID");
             auth.accessType = JSON.nonnullString(json, "AccessType");
             auth.expires = JSON.nonnullDate(json, "Expires");
+            auth.encoded = JSON.nonnullString(json, "Encoded");
             return auth;
         }
     }
