@@ -140,11 +140,38 @@ Java_ca_psiphon_psicashlib_PsiCashLib_NativeGetPurchases(
 
 extern "C" JNIEXPORT jstring
 JNICALL
-Java_ca_psiphon_psicashlib_PsiCashLib_NativeValidPurchases(
+Java_ca_psiphon_psicashlib_PsiCashLib_NativeActivePurchases(
         JNIEnv* env,
         jobject /*this_obj*/) {
-    auto p = GetPsiCash().ValidPurchases();
+    auto p = GetPsiCash().ActivePurchases();
     return JNI_s(SuccessResponse(p));
+}
+
+extern "C" JNIEXPORT jstring
+JNICALL
+Java_ca_psiphon_psicashlib_PsiCashLib_NativeActiveAuthorizations(
+        JNIEnv* env,
+        jobject /*this_obj*/) {
+    auto a = GetPsiCash().ActiveAuthorizations();
+    return JNI_s(SuccessResponse(a));
+}
+
+extern "C" JNIEXPORT jstring
+JNICALL
+Java_ca_psiphon_psicashlib_PsiCashLib_NativeDecodeAuthorization(
+        JNIEnv* env,
+        jclass /*type*/, // jclass and not jobject because it's a static call
+        jstring j_encoded_authorization) {
+    auto encoded_authorization = JStringToString(env, j_encoded_authorization);
+    if (!encoded_authorization) {
+        return JNI_(ERROR_CRITICAL("encoded authorization is required"));
+    }
+
+    auto result = psicash::DecodeAuthorization(*encoded_authorization);
+    if (!result) {
+        return JNI_(WRAP_ERROR(result.error()));
+    }
+    return JNI_s(SuccessResponse(*result));
 }
 
 extern "C" JNIEXPORT jstring

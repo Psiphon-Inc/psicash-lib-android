@@ -230,7 +230,7 @@ public class PsiCashLib {
         public String transactionClass;
         public String distinguisher;
         public Date expiry;
-        public String authorization;
+        public Authorization authorization;
 
         static Purchase fromJSON(JSONObject json) throws JSONException {
             if (json == null) {
@@ -241,8 +241,32 @@ public class PsiCashLib {
             p.transactionClass = JSON.nonnullString(json, "class");
             p.distinguisher = JSON.nonnullString(json, "distinguisher");
             p.expiry = JSON.nullableDate(json, "localTimeExpiry");
-            p.authorization = JSON.nullableString(json, "authorization");
+
+            JSONObject authJSON = JSON.nullableObject(json, "authorization");
+            if (authJSON != null) {
+                p.authorization = Authorization.fromJSON(authJSON);
+            }
             return p;
+        }
+    }
+
+    /**
+     * Authorization information.
+     */
+    public static class Authorization {
+        public String id;
+        public String accessType;
+        public Date expires;
+
+        static Authorization fromJSON(JSONObject json) throws JSONException {
+            if (json == null) {
+                return null;
+            }
+            Authorization auth = new Authorization();
+            auth.id = JSON.nonnullString(json, "ID");
+            auth.accessType = JSON.nonnullString(json, "AccessType");
+            auth.expires = JSON.nonnullDate(json, "Expires");
+            return auth;
         }
     }
 
@@ -396,7 +420,7 @@ public class PsiCashLib {
     }
 
     /**
-     * Retrieves the set of active purchases, if any.
+     * Retrieves the set of all (active or expired) purchases, if any.
      * @return List will be empty if there are no purchases.
      */
     @NonNull
@@ -426,24 +450,76 @@ public class PsiCashLib {
      * @return List will be empty if there are no valid purchases.
      */
     @NonNull
-    synchronized public ValidPurchasesResult validPurchases() {
-        String jsonStr = this.NativeValidPurchases();
-        JNI.Result.ValidPurchases res = new JNI.Result.ValidPurchases(jsonStr);
-        return new ValidPurchasesResult(res);
+    synchronized public ActivePurchasesResult activePurchases() {
+        String jsonStr = this.NativeActivePurchases();
+        JNI.Result.ActivePurchases res = new JNI.Result.ActivePurchases(jsonStr);
+        return new ActivePurchasesResult(res);
     }
 
-    public static class ValidPurchasesResult {
+    public static class ActivePurchasesResult {
         // Expected to be null; indicates glue problem.
         public Error error;
         // Null iff error (which is not expected).
         public List<Purchase> purchases;
 
-        ValidPurchasesResult(JNI.Result.ValidPurchases res) {
+        ActivePurchasesResult(JNI.Result.ActivePurchases res) {
             this.error = res.error;
             if (this.error != null) {
                 return;
             }
             this.purchases = res.purchases;
+        }
+    }
+
+    /**
+     * Retrieves the set of active authorizations that are not expired, if any.
+     * @return List will be empty if there are no valid purchases with authorizations.
+     */
+    @NonNull
+    synchronized public ActiveAuthorizationsResult activeAuthorizations() {
+        String jsonStr = this.NativeActiveAuthorizations();
+        JNI.Result.ActiveAuthorizations res = new JNI.Result.ActiveAuthorizations(jsonStr);
+        return new ActiveAuthorizationsResult(res);
+    }
+
+    public static class ActiveAuthorizationsResult {
+        // Expected to be null; indicates glue problem.
+        public Error error;
+        // Null iff error (which is not expected).
+        public List<Authorization> authorizations;
+
+        ActiveAuthorizationsResult(JNI.Result.ActiveAuthorizations res) {
+            this.error = res.error;
+            if (this.error != null) {
+                return;
+            }
+            this.authorizations = res.authorizations;
+        }
+    }
+
+    /**
+     * Decodes and deserializes the given encoded Authorization, returning the result.
+     * @return The decoded authorization.
+     */
+    @NonNull
+    synchronized public static DecodeAuthorizationResult decodeAuthorization(String encodedAuthorization) {
+        String jsonStr = NativeDecodeAuthorization(encodedAuthorization);
+        JNI.Result.DecodeAuthorization res = new JNI.Result.DecodeAuthorization(jsonStr);
+        return new DecodeAuthorizationResult(res);
+    }
+
+    public static class DecodeAuthorizationResult {
+        // Expected to be null; indicates glue problem.
+        public Error error;
+        // Null iff error (which is not expected).
+        public Authorization authorization;
+
+        DecodeAuthorizationResult(JNI.Result.DecodeAuthorization res) {
+            this.error = res.error;
+            if (this.error != null) {
+                return;
+            }
+            this.authorization = res.authorization;
         }
     }
 
@@ -899,10 +975,10 @@ public class PsiCashLib {
                 }
             }
 
-            private static class ValidPurchases extends Base {
+            private static class ActivePurchases extends Base {
                 List<Purchase> purchases;
 
-                public ValidPurchases(String jsonStr) {
+                public ActivePurchases(String jsonStr) {
                     super(jsonStr);
                 }
 
@@ -910,6 +986,34 @@ public class PsiCashLib {
                 public void fromJSON(JSONObject json, String key) {
                     this.purchases = JSON.nullableList(
                             PsiCashLib.Purchase.class, json, key, PsiCashLib.Purchase::fromJSON, true);
+                }
+            }
+
+            private static class ActiveAuthorizations extends Base {
+                List<Authorization> authorizations;
+
+                public ActiveAuthorizations(String jsonStr) {
+                    super(jsonStr);
+                }
+
+                @Override
+                public void fromJSON(JSONObject json, String key) {
+                    this.authorizations = JSON.nullableList(
+                            PsiCashLib.Authorization.class, json, key, PsiCashLib.Authorization::fromJSON, true);
+                }
+            }
+
+            private static class DecodeAuthorization extends Base {
+                Authorization authorization;
+
+                public DecodeAuthorization(String jsonStr) {
+                    super(jsonStr);
+                }
+
+                @Override
+                public void fromJSON(JSONObject json, String key) throws JSONException {
+                    json = JSON.nonnullObject(json, key);
+                    this.authorization = PsiCashLib.Authorization.fromJSON(json);
                 }
             }
 
@@ -1393,10 +1497,26 @@ public class PsiCashLib {
     /**
      * @return {
      * "error": {...},
-     * "result": [ ... Purchases ... ]
+     * "result": [ ... Purchase ... ]
      * }
      */
-    private native String NativeValidPurchases();
+    private native String NativeActivePurchases();
+
+    /**
+     * @return {
+     * "error": {...},
+     * "result": [ ... Authorization ... ]
+     * }
+     */
+    private native String NativeActiveAuthorizations();
+
+    /**
+     * @return {
+     * "error": {...},
+     * "result": Authorization
+     * }
+     */
+    private native static String NativeDecodeAuthorization(String encoded_authorization);
 
     /**
      * @return {
