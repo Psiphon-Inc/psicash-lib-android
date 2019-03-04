@@ -21,6 +21,7 @@ public class DecodeAuthorizationTest extends TestBase {
         assertThat(decodeRes1.authorization.id.length(), greaterThan(0));
         assertThat(decodeRes1.authorization.accessType, equalTo("speed-boost-test"));
         assertTrue(decodeRes1.authorization.expires.before(new Date()));
+        assertThat(decodeRes1.authorization.encoded, equalTo(encodedAuth1));
 
         PsiCashLib.DecodeAuthorizationResult decodeRes2 = PsiCashLib.decodeAuthorization(encodedAuth2);
         assertNull(decodeRes2.error);
@@ -29,6 +30,7 @@ public class DecodeAuthorizationTest extends TestBase {
         assertThat(decodeRes2.authorization.id.length(), greaterThan(0));
         assertThat(decodeRes2.authorization.accessType, equalTo("speed-boost-test"));
         assertTrue(decodeRes2.authorization.expires.before(new Date()));
+        assertThat(decodeRes2.authorization.encoded, equalTo(encodedAuth2));
 
         assertThat(decodeRes1.authorization.id, not(equalTo(decodeRes2.authorization.id)));
     }
