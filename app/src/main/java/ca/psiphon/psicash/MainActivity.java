@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
             PsiCashLib.BalanceResult b = psiCashLib.balance();
             PsiCashLib.GetPurchasePricesResult pp = psiCashLib.getPurchasePrices();
             PsiCashLib.GetPurchasesResult gpr = psiCashLib.getPurchases();
-            PsiCashLib.ValidPurchasesResult vpr = psiCashLib.validPurchases();
+            PsiCashLib.ActivePurchasesResult vpr = psiCashLib.activePurchases();
             PsiCashLib.NextExpiringPurchaseResult ner = psiCashLib.nextExpiringPurchase();
             PsiCashLib.ExpirePurchasesResult epr = psiCashLib.expirePurchases();
 
@@ -67,6 +67,8 @@ public class MainActivity extends AppCompatActivity {
             PsiCashLib.GetRewardedActivityDataResult gradr = psiCashLib.getRewardedActivityData();
             PsiCashLib.GetDiagnosticInfoResult gdir = psiCashLib.getDiagnosticInfo();
 
+            String encodedAuth = "eyJBdXRob3JpemF0aW9uIjp7IklEIjoiMFYzRXhUdmlBdFNxTGZOd2FpQXlHNHpaRUJJOGpIYnp5bFdNeU5FZ1JEZz0iLCJBY2Nlc3NUeXBlIjoic3BlZWQtYm9vc3QtdGVzdCIsIkV4cGlyZXMiOiIyMDE5LTAxLTE0VDE3OjIyOjIzLjE2ODc2NDEyOVoifSwiU2lnbmluZ0tleUlEIjoiUUNZTzV2clIvZGhjRDZ6M2FMQlVNeWRuZlJyZFNRL1RWYW1IUFhYeTd0TT0iLCJTaWduYXR1cmUiOiJQL2NrenloVUJoSk5RQ24zMnluM1VTdGpLencxU04xNW9MclVhTU9XaW9scXBOTTBzNVFSNURHVEVDT1FzQk13ODdQdTc1TGE1OGtJTHRIcW1BVzhDQT09In0=";
+            PsiCashLib.DecodeAuthorizationResult authRes = PsiCashLib.decodeAuthorization(encodedAuth);
 
             PsiCashLib.NewExpiringPurchaseResult nep = psiCashLib.newExpiringPurchase(
                     "speed-boost",

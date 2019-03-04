@@ -46,8 +46,8 @@ before_script:
   - adb shell input keyevent 82 &
 
 before_install:
-  - openssl aes-256-cbc -K $encrypted_9f360b3d7cd1_key -iv $encrypted_9f360b3d7cd1_iv -in psicashlib/src/main/cpp/psicashlib/SecretTestValues.h.enc -out psicashlib/src/main/cpp/psicashlib/SecretTestValues.h -d
-  - openssl aes-256-cbc -K $encrypted_83c44069a3fc_key -iv $encrypted_83c44069a3fc_iv -in psicashlib/src/androidTest/java/ca/psiphon/psicashlib/SecretTestValues.java.enc -out psicashlib/src/androidTest/java/ca/psiphon/psicashlib/SecretTestValues.java -d
+  - openssl aes-256-cbc -K $encrypted_9311258fe34f_key -iv $encrypted_9311258fe34f_iv -in SecretTestValues.h.enc -out SecretTestValues.h -d
+  - openssl aes-256-cbc -K $encrypted_a990d03d7c67_key -iv $encrypted_a990d03d7c67_iv -in SecretTestValues.java.enc -out SecretTestValues.java -d
   - echo y | android update sdk -u -a -t "build-tools-$ANDROID_BUILD_TOOLS_VERSION"
   - echo y | android update sdk -u -a -t "android-28"
 
