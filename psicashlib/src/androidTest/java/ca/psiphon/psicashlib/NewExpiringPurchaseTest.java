@@ -118,7 +118,7 @@ public class NewExpiringPurchaseTest extends TestBase {
         PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
-        assertEquals(0, pcl.balance().balance); // no credit
+        assertThat(pcl.balance().balance, allOf(greaterThanOrEqualTo(0L), lessThanOrEqualTo(MAX_STARTING_BALANCE)));
 
         PsiCashLib.NewExpiringPurchaseResult nepr = pcl.newExpiringPurchase(TEST_DEBIT_TRANSACTION_CLASS, TEST_ONE_TRILLION_ONE_MICROSECOND_DISTINGUISHER, ONE_TRILLION);
         assertNull(nepr.error);
