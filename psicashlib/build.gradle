@@ -25,6 +25,8 @@ android {
 
             externalNativeBuild {
                 cmake {
+                    version "3.10.2"
+
                     // To keep the size small, do not include all ABIs in release build
                     abiFilters "armeabi-v7a"
                 }
