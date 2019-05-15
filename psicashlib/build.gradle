@@ -25,6 +25,8 @@ android {
 
             externalNativeBuild {
                 cmake {
+                    version "3.10.2"
+
                     // To keep the size small, do not include all ABIs in release build
                     abiFilters "armeabi-v7a"
                 }
@@ -48,15 +50,17 @@ android {
     }
 }
 
-task recordGitVersion << {
-    def gitVer = new ByteArrayOutputStream()
+task recordGitVersion() {
+    description = "Output git state file"
 
-    exec {
-        commandLine "git", "describe", "--always", "--long", "--dirty", "--tags"
-        standardOutput = gitVer
+    doLast {
+        def gitVer = new ByteArrayOutputStream()
+        exec {
+            commandLine "git", "describe", "--always", "--long", "--dirty", "--tags"
+            standardOutput = gitVer
+        }
+        new File("$projectDir/src/main/assets/git.txt").text = gitVer.toString().trim()
     }
-
-    new File("$projectDir/src/main/assets/git.txt").text = gitVer.toString().trim()
 }
 
 afterEvaluate { project ->

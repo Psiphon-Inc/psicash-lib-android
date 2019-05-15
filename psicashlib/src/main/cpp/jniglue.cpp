@@ -19,7 +19,7 @@
 
 #include <jni.h>
 #include <string>
-#include <stdio.h>
+#include <cstdio>
 #include "jnihelpers.hpp"
 #include "error.hpp"
 #include "psicash.hpp"
@@ -96,19 +96,19 @@ Java_ca_psiphon_psicashlib_PsiCashLib_NativeSetRequestMetadataItem(
 
 extern "C" JNIEXPORT jstring
 JNICALL
-Java_ca_psiphon_psicashlib_PsiCashLib_NativeIsAccount(
-        JNIEnv* env,
-        jobject /*this_obj*/) {
-    return JNI_s(SuccessResponse(GetPsiCash().IsAccount()));
-}
-
-extern "C" JNIEXPORT jstring
-JNICALL
 Java_ca_psiphon_psicashlib_PsiCashLib_NativeValidTokenTypes(
         JNIEnv* env,
         jobject /*this_obj*/) {
     auto vtt = GetPsiCash().ValidTokenTypes();
     return JNI_s(SuccessResponse(vtt));
+}
+
+extern "C" JNIEXPORT jstring
+JNICALL
+Java_ca_psiphon_psicashlib_PsiCashLib_NativeIsAccount(
+        JNIEnv* env,
+        jobject /*this_obj*/) {
+    return JNI_s(SuccessResponse(GetPsiCash().IsAccount()));
 }
 
 extern "C" JNIEXPORT jstring
@@ -149,11 +149,39 @@ Java_ca_psiphon_psicashlib_PsiCashLib_NativeActivePurchases(
 
 extern "C" JNIEXPORT jstring
 JNICALL
-Java_ca_psiphon_psicashlib_PsiCashLib_NativeActiveAuthorizations(
+Java_ca_psiphon_psicashlib_PsiCashLib_NativeGetAuthorizations(
         JNIEnv* env,
-        jobject /*this_obj*/) {
-    auto a = GetPsiCash().ActiveAuthorizations();
+        jobject /*this_obj*/,
+        jboolean active_only) {
+    auto a = GetPsiCash().GetAuthorizations(active_only);
     return JNI_s(SuccessResponse(a));
+}
+
+extern "C" JNIEXPORT jstring
+JNICALL
+Java_ca_psiphon_psicashlib_PsiCashLib_NativeGetPurchasesByAuthorizationID(
+        JNIEnv* env,
+        jobject /*this_obj*/,
+        jobjectArray authorization_ids) {
+    if (!authorization_ids) {
+        return JNI_s(SuccessResponse());
+    }
+
+    int id_count = env->GetArrayLength(authorization_ids);
+    if (id_count == 0) {
+        return JNI_s(SuccessResponse());
+    }
+
+    vector<string> ids;
+    for (int i = 0; i < id_count; ++i) {
+        auto id = JStringToString(env, (jstring)(env->GetObjectArrayElement(authorization_ids, i)));
+        if (id) {
+            ids.push_back(*id);
+        }
+    }
+
+    auto purchases = GetPsiCash().GetPurchasesByAuthorizationID(ids);
+    return JNI_s(SuccessResponse(purchases));
 }
 
 extern "C" JNIEXPORT jstring

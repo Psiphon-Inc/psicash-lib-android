@@ -26,6 +26,8 @@ import java.util.Random;
 public class TestBase {
     private static File testSubDir;
 
+    static long MAX_STARTING_BALANCE = 100000000000L;
+
     @BeforeClass
     public static void makeTestDir() {
         String cacheDirPath = InstrumentationRegistry.getTargetContext().getCacheDir().toString();

@@ -41,7 +41,7 @@ public class RefreshStateTest extends TestBase {
         assertThat(vttr.validTokenTypes.size(), is(3));
         br = pcl.balance();
         assertNull(br.error);
-        assertEquals(0L, br.balance);
+        assertThat(br.balance, allOf(greaterThanOrEqualTo(0L), lessThanOrEqualTo(MAX_STARTING_BALANCE)));
 
         // Second call, which just refreshes
         res = pcl.refreshState(null);
@@ -55,7 +55,7 @@ public class RefreshStateTest extends TestBase {
         assertThat(vttr.validTokenTypes.size(), is(3));
         br = pcl.balance();
         assertNull(br.error);
-        assertEquals(0L, br.balance);
+        assertThat(br.balance, allOf(greaterThanOrEqualTo(0L), lessThanOrEqualTo(MAX_STARTING_BALANCE)));
     }
 
     @Test
@@ -75,8 +75,9 @@ public class RefreshStateTest extends TestBase {
         assertThat(vttr.validTokenTypes.size(), is(3));
         PsiCashLib.BalanceResult br = pcl.balance();
         assertNull(br.error);
-        assertEquals(0L, br.balance);
+        assertThat(br.balance, allOf(greaterThanOrEqualTo(0L), lessThanOrEqualTo(MAX_STARTING_BALANCE)));
 
+        long initialBalance = br.balance;
         err = pcl.testReward(1);
         assertNull(conds(err, "message"), err);
 
@@ -86,7 +87,7 @@ public class RefreshStateTest extends TestBase {
 
         br = pcl.balance();
         assertNull(br.error);
-        assertEquals(SecretTestValues.ONE_TRILLION, br.balance);
+        assertEquals(initialBalance + SecretTestValues.ONE_TRILLION, br.balance);
     }
 
     @Test
