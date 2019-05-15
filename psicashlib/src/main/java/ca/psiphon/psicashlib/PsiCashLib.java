@@ -474,28 +474,62 @@ public class PsiCashLib {
     }
 
     /**
-     * Retrieves the set of active authorizations that are not expired, if any.
-     * @return List will be empty if there are no valid purchases with authorizations.
+     * Returns all purchase authorizations. If activeOnly is true, only authorizations
+     * for non-expired purchases will be returned.
+     * @return List of authorizations, possibly empty.
      */
     @NonNull
-    synchronized public ActiveAuthorizationsResult activeAuthorizations() {
-        String jsonStr = this.NativeActiveAuthorizations();
-        JNI.Result.ActiveAuthorizations res = new JNI.Result.ActiveAuthorizations(jsonStr);
-        return new ActiveAuthorizationsResult(res);
+    synchronized public GetAuthorizationsResult getAuthorizations(boolean activeOnly) {
+        String jsonStr = this.NativeGetAuthorizations(activeOnly);
+        JNI.Result.GetAuthorizations res = new JNI.Result.GetAuthorizations(jsonStr);
+        return new GetAuthorizationsResult(res);
     }
 
-    public static class ActiveAuthorizationsResult {
+    public static class GetAuthorizationsResult {
         // Expected to be null; indicates glue problem.
         public Error error;
         // Null iff error (which is not expected).
         public List<Authorization> authorizations;
 
-        ActiveAuthorizationsResult(JNI.Result.ActiveAuthorizations res) {
+        GetAuthorizationsResult(JNI.Result.GetAuthorizations res) {
             this.error = res.error;
             if (this.error != null) {
                 return;
             }
             this.authorizations = res.authorizations;
+        }
+    }
+
+    /**
+     * Returns all purchases that match the given set of Authorization IDs.
+     * @param authorizationIDs List of authorization IDs for which purchases should be
+     *                         retrieved.
+     * @return List of purchases containing the given authorizations.
+     */
+    @Nullable
+    synchronized public GetPurchasesByAuthorizationIDResult getPurchasesByAuthorizationID(List<String> authorizationIDs) {
+        String[] idsArray = null;
+        if (authorizationIDs != null) {
+            idsArray = authorizationIDs.toArray(new String[0]);
+        }
+        String jsonStr = this.NativeGetPurchasesByAuthorizationID(idsArray);
+        JNI.Result.GetPurchasesByAuthorizationID res = new JNI.Result.GetPurchasesByAuthorizationID(jsonStr);
+        return new GetPurchasesByAuthorizationIDResult(res);
+
+    }
+
+    public static class GetPurchasesByAuthorizationIDResult {
+        // Null if storage writing problem or glue problem.
+        public Error error;
+        // Null iff error (which is not expected). Contains the removed purchases.
+        public List<Purchase> purchases;
+
+        GetPurchasesByAuthorizationIDResult(JNI.Result.GetPurchasesByAuthorizationID res) {
+            this.error = res.error;
+            if (this.error != null) {
+                return;
+            }
+            this.purchases = res.purchases;
         }
     }
 
@@ -991,10 +1025,10 @@ public class PsiCashLib {
                 }
             }
 
-            private static class ActiveAuthorizations extends Base {
+            private static class GetAuthorizations extends Base {
                 List<Authorization> authorizations;
 
-                public ActiveAuthorizations(String jsonStr) {
+                public GetAuthorizations(String jsonStr) {
                     super(jsonStr);
                 }
 
@@ -1002,6 +1036,20 @@ public class PsiCashLib {
                 public void fromJSON(JSONObject json, String key) {
                     this.authorizations = JSON.nullableList(
                             PsiCashLib.Authorization.class, json, key, PsiCashLib.Authorization::fromJSON, true);
+                }
+            }
+
+            private static class GetPurchasesByAuthorizationID extends Base {
+                List<Purchase> purchases;
+
+                public GetPurchasesByAuthorizationID(String jsonStr) {
+                    super(jsonStr);
+                }
+
+                @Override
+                public void fromJSON(JSONObject json, String key) {
+                    this.purchases = JSON.nullableList(
+                            PsiCashLib.Purchase.class, json, key, PsiCashLib.Purchase::fromJSON, true);
                 }
             }
 
@@ -1510,7 +1558,15 @@ public class PsiCashLib {
      * "result": [ ... Authorization ... ]
      * }
      */
-    private native String NativeActiveAuthorizations();
+    private native String NativeGetAuthorizations(boolean active_only);
+
+    /**
+     * @return {
+     * "error": {...},
+     * "result": [ ... Purchase ... ]
+     * }
+     */
+    private native String NativeGetPurchasesByAuthorizationID(String[] authorization_ids);
 
     /**
      * @return {

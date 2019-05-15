@@ -6,7 +6,7 @@ import static ca.psiphon.psicashlib.SecretTestValues.*;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
-public class ActiveAuthorizationsTest extends TestBase {
+public class GetAuthorizationsTest extends TestBase {
     @Test
     public void simpleSuccess() {
         PsiCashLibTester pcl = new PsiCashLibTester();
@@ -14,7 +14,10 @@ public class ActiveAuthorizationsTest extends TestBase {
         assertNull(err);
 
         // Default value, before the first RefreshState
-        PsiCashLib.ActiveAuthorizationsResult aar = pcl.activeAuthorizations();
+        PsiCashLib.GetAuthorizationsResult aar = pcl.getAuthorizations(false);
+        assertNull(aar.error);
+        assertThat(aar.authorizations, hasSize(0));
+        aar = pcl.getAuthorizations(true);
         assertNull(aar.error);
         assertThat(aar.authorizations, hasSize(0));
 
@@ -22,7 +25,10 @@ public class ActiveAuthorizationsTest extends TestBase {
         PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
-        aar = pcl.activeAuthorizations();
+        aar = pcl.getAuthorizations(false);
+        assertNull(aar.error);
+        assertThat(aar.authorizations, hasSize(0));
+        aar = pcl.getAuthorizations(true);
         assertNull(aar.error);
         assertThat(aar.authorizations, hasSize(0));
 
@@ -30,7 +36,10 @@ public class ActiveAuthorizationsTest extends TestBase {
         res = pcl.refreshState(null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
-        aar = pcl.activeAuthorizations();
+        aar = pcl.getAuthorizations(false);
+        assertNull(aar.error);
+        assertThat(aar.authorizations, hasSize(0));
+        aar = pcl.getAuthorizations(true);
         assertNull(aar.error);
         assertThat(aar.authorizations, hasSize(0));
     }
@@ -47,7 +56,7 @@ public class ActiveAuthorizationsTest extends TestBase {
         PsiCashLib.ActivePurchasesResult apr = pcl.activePurchases();
         assertNull(apr.error);
         assertThat(apr.purchases, hasSize(0));
-        PsiCashLib.ActiveAuthorizationsResult aar = pcl.activeAuthorizations();
+        PsiCashLib.GetAuthorizationsResult aar = pcl.getAuthorizations(false);
         assertNull(aar.error);
         assertThat(aar.authorizations, hasSize(0));
 
@@ -67,7 +76,10 @@ public class ActiveAuthorizationsTest extends TestBase {
         apr = pcl.activePurchases();
         assertNull(apr.error);
         assertThat(apr.purchases, hasSize(1));
-        aar = pcl.activeAuthorizations();
+        aar = pcl.getAuthorizations(false);
+        assertNull(aar.error);
+        assertThat(aar.authorizations, hasSize(0));
+        aar = pcl.getAuthorizations(true);
         assertNull(aar.error);
         assertThat(aar.authorizations, hasSize(0));
 
@@ -79,7 +91,10 @@ public class ActiveAuthorizationsTest extends TestBase {
         apr = pcl.activePurchases();
         assertNull(apr.error);
         assertThat(apr.purchases, hasSize(2));
-        aar = pcl.activeAuthorizations();
+        aar = pcl.getAuthorizations(false);
+        assertNull(aar.error);
+        assertThat(aar.authorizations, hasSize(1));
+        aar = pcl.getAuthorizations(true);
         assertNull(aar.error);
         assertThat(aar.authorizations, hasSize(1));
 
@@ -88,10 +103,16 @@ public class ActiveAuthorizationsTest extends TestBase {
         apr = pcl.activePurchases();
         assertNull(apr.error);
         assertThat(apr.purchases, hasSize(0));
-        aar = pcl.activeAuthorizations();
+        aar = pcl.getAuthorizations(false);
+        assertThat(aar.authorizations, hasSize(1));
+        aar = pcl.getAuthorizations(true);
         assertThat(aar.authorizations, hasSize(0));
         PsiCashLib.ExpirePurchasesResult epr = pcl.expirePurchases();
         assertNull(epr.error);
         assertThat(epr.purchases, hasSize(2));
+        aar = pcl.getAuthorizations(false);
+        assertThat(aar.authorizations, hasSize(0));
+        aar = pcl.getAuthorizations(true);
+        assertThat(aar.authorizations, hasSize(0));
     }
 }
