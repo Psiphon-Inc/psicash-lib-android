@@ -4,6 +4,8 @@ package ca.psiphon.psicashlib;
 import org.junit.*;
 
 import java.util.Arrays;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
 
 import static ca.psiphon.psicashlib.SecretTestValues.TEST_DEBIT_TRANSACTION_CLASS;
 import static org.hamcrest.Matchers.*;
@@ -127,5 +129,85 @@ public class RefreshStateTest extends TestBase {
         res = pcl.refreshState(null);
         assertNotNull(res.error);
         assertThat(res.error.message, containsString("666"));
+    }
+
+    @Test
+    public void concurrentNewTracker() {
+        // Test https://github.com/Psiphon-Inc/psiphon-issues/issues/557
+
+        PsiCashLibTester pcl = new PsiCashLibTester();
+        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper());
+        assertNull(conds(err, "message"), err);
+
+        // Execute a lot of threads with few reps, to increase the chance of concurrency
+        // on NewTracker.
+        int threads = 10;
+        CountDownLatch signal = new CountDownLatch(threads);
+        int reps = 5;
+        Executor exec = new ThreadPerTaskExecutor();
+        for (int i = 0; i < threads; i++) {
+            exec.execute(new ReqRunnable(pcl, signal, reps));
+        }
+
+        try {
+            signal.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void concurrentRefreshState() {
+        // Test https://github.com/Psiphon-Inc/psiphon-issues/issues/557
+
+        PsiCashLibTester pcl = new PsiCashLibTester();
+        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper());
+        assertNull(conds(err, "message"), err);
+
+        // We'll do an initial RefreshState here to ensure tokens are in place
+        PsiCashLib.RefreshStateResult res = pcl.refreshState(Arrays.asList("speed-boost"));
+        assertNull(conds(res.error, "message"), res.error);
+        assertEquals(PsiCashLib.Status.SUCCESS, res.status);
+
+        int threads = 3;
+        CountDownLatch signal = new CountDownLatch(threads);
+        int reps = 100;
+        Executor exec = new ThreadPerTaskExecutor();
+        for (int i = 0; i < threads; i++) {
+            exec.execute(new ReqRunnable(pcl, signal, reps));
+        }
+
+        try {
+            signal.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private class ReqRunnable implements Runnable {
+        PsiCashLibTester pcl;
+        CountDownLatch signal;
+        int reps;
+
+        ReqRunnable(PsiCashLibTester pcl, CountDownLatch signal, int reps) {
+            this.pcl = pcl;
+            this.signal = signal;
+            this.reps = reps;
+        }
+
+        @Override
+        public void run() {
+            for (int i = 0; i < reps; i++) {
+                PsiCashLib.RefreshStateResult res = pcl.refreshState(Arrays.asList("speed-boost"));
+                assertNull(conds(res.error, "message"), res.error);
+                assertEquals(PsiCashLib.Status.SUCCESS, res.status);
+            }
+            signal.countDown();
+        }
+    }
+    class ThreadPerTaskExecutor implements Executor {
+        public void execute(Runnable r) {
+            new Thread(r).start();
+        }
     }
 }

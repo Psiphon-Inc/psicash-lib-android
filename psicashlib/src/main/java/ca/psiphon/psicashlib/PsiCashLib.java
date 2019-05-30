@@ -29,12 +29,16 @@ import org.json.JSONObject;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
  * The PsiCash library interface. It provides a wrapper around the C++ core.
  */
 public class PsiCashLib {
+    private final Lock writeLock = new ReentrantLock();
+
     /**
      * The library user must implement this interface. It provides HTTP request
      * functionality to the library.
@@ -286,7 +290,14 @@ public class PsiCashLib {
      */
     @Nullable
     public Error init(String fileStoreRoot, HTTPRequester httpRequester) {
-        Error res = init(fileStoreRoot, httpRequester, false);
+        Error res;
+        writeLock.lock();
+        try {
+            res = init(fileStoreRoot, httpRequester, false);
+        }
+        finally {
+            writeLock.unlock();
+        }
         return res;
     }
 
@@ -298,7 +309,14 @@ public class PsiCashLib {
     @Nullable
     protected Error init(String fileStoreRoot, HTTPRequester httpRequester, boolean test) {
         this.httpRequester = httpRequester;
-        String jsonStr = this.NativeObjectInit(fileStoreRoot, test);
+        writeLock.lock();
+        String jsonStr;
+        try {
+            jsonStr = this.NativeObjectInit(fileStoreRoot, test);
+        }
+        finally {
+            writeLock.unlock();
+        }
         JNI.Result.ErrorOnly res = new JNI.Result.ErrorOnly(jsonStr);
         return res.error;
     }
@@ -310,7 +328,14 @@ public class PsiCashLib {
      */
     @Nullable
     public Error setRequestMetadataItem(String key, String value) {
-        String jsonStr = this.NativeSetRequestMetadataItem(key, value);
+        String jsonStr;
+        writeLock.lock();
+        try {
+            jsonStr = this.NativeSetRequestMetadataItem(key, value);
+        }
+        finally {
+            writeLock.unlock();
+        }
         JNI.Result.ErrorOnly res = new JNI.Result.ErrorOnly(jsonStr);
         return res.error;
     }
@@ -592,7 +617,14 @@ public class PsiCashLib {
      */
     @NonNull
     public ExpirePurchasesResult expirePurchases() {
-        String jsonStr = this.NativeExpirePurchases();
+        String jsonStr;
+        writeLock.lock();
+        try {
+            jsonStr = this.NativeExpirePurchases();
+        }
+        finally {
+            writeLock.unlock();
+        }
         JNI.Result.ExpirePurchases res = new JNI.Result.ExpirePurchases(jsonStr);
         return new ExpirePurchasesResult(res);
     }
@@ -627,7 +659,14 @@ public class PsiCashLib {
         if (transactionIDs != null) {
             idsArray = transactionIDs.toArray(new String[0]);
         }
-        String jsonStr = this.NativeRemovePurchases(idsArray);
+        String jsonStr;
+        writeLock.lock();
+        try {
+            jsonStr = this.NativeRemovePurchases(idsArray);
+        }
+        finally {
+            writeLock.unlock();
+        }
         JNI.Result.RemovePurchases res = new JNI.Result.RemovePurchases(jsonStr);
         return new RemovePurchasesResult(res);
 
@@ -749,7 +788,14 @@ public class PsiCashLib {
         if (purchaseClasses == null) {
             purchaseClasses = new ArrayList<>();
         }
-        String jsonStr = this.NativeRefreshState(purchaseClasses.toArray(new String[0]));
+        String jsonStr;
+        writeLock.lock();
+        try {
+            jsonStr = this.NativeRefreshState(purchaseClasses.toArray(new String[0]));
+        }
+        finally {
+            writeLock.unlock();
+        }
         JNI.Result.RefreshState res = new JNI.Result.RefreshState(jsonStr);
         return new RefreshStateResult(res);
     }
@@ -783,7 +829,14 @@ public class PsiCashLib {
     @NonNull
     public NewExpiringPurchaseResult newExpiringPurchase(
             String transactionClass, String distinguisher, long expectedPrice) {
-        String jsonStr = this.NativeNewExpiringPurchase(transactionClass, distinguisher, expectedPrice);
+        String jsonStr;
+        writeLock.lock();
+        try {
+            jsonStr = this.NativeNewExpiringPurchase(transactionClass, distinguisher, expectedPrice);
+        }
+        finally {
+            writeLock.unlock();
+        }
         JNI.Result.NewExpiringPurchase res = new JNI.Result.NewExpiringPurchase(jsonStr);
         return new NewExpiringPurchaseResult(res);
     }
