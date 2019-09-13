@@ -15,7 +15,7 @@ public class RefreshStateTest extends TestBase {
     @Test
     public void simpleSuccess() {
         PsiCashLibTester pcl = new PsiCashLibTester();
-        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper());
+        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper(), false);
         assertNull(err);
 
         // Before first call, so default values
@@ -63,7 +63,7 @@ public class RefreshStateTest extends TestBase {
     @Test
     public void balanceChange() {
         PsiCashLibTester pcl = new PsiCashLibTester();
-        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper());
+        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper(), false);
         assertNull(err);
 
         PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
@@ -95,7 +95,7 @@ public class RefreshStateTest extends TestBase {
     @Test
     public void withPurchaseClasses() {
         PsiCashLibTester pcl = new PsiCashLibTester();
-        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper());
+        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper(), false);
         assertNull(err);
 
         PsiCashLib.GetPurchasePricesResult gppr = pcl.getPurchasePrices();
@@ -112,7 +112,7 @@ public class RefreshStateTest extends TestBase {
     @Test
     public void serverErrors() {
         PsiCashLibTester pcl = new PsiCashLibTester();
-        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper());
+        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper(), false);
         assertNull(err);
 
         pcl.setRequestMutators(Arrays.asList("Response:code=500", "Response:code=500", "Response:code=500"));
@@ -136,7 +136,7 @@ public class RefreshStateTest extends TestBase {
         // Test https://github.com/Psiphon-Inc/psiphon-issues/issues/557
 
         PsiCashLibTester pcl = new PsiCashLibTester();
-        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper());
+        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper(), false);
         assertNull(conds(err, "message"), err);
 
         // Execute a lot of threads with few reps, to increase the chance of concurrency
@@ -161,7 +161,7 @@ public class RefreshStateTest extends TestBase {
         // Test https://github.com/Psiphon-Inc/psiphon-issues/issues/557
 
         PsiCashLibTester pcl = new PsiCashLibTester();
-        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper());
+        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper(), false);
         assertNull(conds(err, "message"), err);
 
         // We'll do an initial RefreshState here to ensure tokens are in place

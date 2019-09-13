@@ -7,7 +7,7 @@ public class SetRequestMetadataItemTest extends TestBase {
     @Test
     public void simpleSuccess() {
         PsiCashLibTester pcl = new PsiCashLibTester();
-        PsiCashLib.Error err = pcl.init(getTempDir(), null);
+        PsiCashLib.Error err = pcl.init(getTempDir(), null, false);
         assertNull(err);
 
         err = pcl.setRequestMetadataItem("mykey", "myval");

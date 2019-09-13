@@ -10,7 +10,7 @@ public class BalanceTest extends TestBase {
     @Test
     public void simpleSuccess() {
         PsiCashLibTester pcl = new PsiCashLibTester();
-        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper());
+        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper(), false);
         assertNull(err);
 
         // Default value, before the first RefreshState
@@ -43,7 +43,7 @@ public class BalanceTest extends TestBase {
     @Test
     public void balanceChange() {
         PsiCashLibTester pcl = new PsiCashLibTester();
-        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper());
+        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper(), false);
         assertNull(err);
 
         PsiCashLib.RefreshStateResult res = pcl.refreshState(null);

@@ -13,7 +13,7 @@ public class RemovePurchasesTest extends TestBase {
     @Test
     public void simpleSuccess() {
         PsiCashLibTester pcl = new PsiCashLibTester();
-        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper());
+        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper(), false);
         assertNull(err);
 
         // Test with both null param and empty array, as the code path is different
@@ -55,7 +55,7 @@ public class RemovePurchasesTest extends TestBase {
     @Test
     public void withPurchases() {
         PsiCashLibTester pcl = new PsiCashLibTester();
-        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper());
+        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper(), false);
         assertNull(err);
 
         PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
