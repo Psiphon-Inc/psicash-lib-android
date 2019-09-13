@@ -8,7 +8,7 @@ public class ModifyLandingPageTest extends TestBase {
     @Test
     public void simpleSuccess() {
         PsiCashLibTester pcl = new PsiCashLibTester();
-        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper());
+        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper(), false);
         assertNull(err);
 
         String url = "http://example.com/a/b";

@@ -13,7 +13,7 @@ public class NewExpiringPurchaseTest extends TestBase {
     @Test
     public void simpleSuccess() {
         PsiCashLibTester pcl = new PsiCashLibTester();
-        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper());
+        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper(), false);
         assertNull(err);
 
         // Get tokens to use
@@ -56,7 +56,7 @@ public class NewExpiringPurchaseTest extends TestBase {
     @Test
     public void failureNoTokens() {
         PsiCashLibTester pcl = new PsiCashLibTester();
-        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper());
+        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper(), false);
         assertNull(err);
 
         // We start out with no tokens to use
@@ -69,7 +69,7 @@ public class NewExpiringPurchaseTest extends TestBase {
     @Test
     public void failureNotFound() {
         PsiCashLibTester pcl = new PsiCashLibTester();
-        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper());
+        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper(), false);
         assertNull(err);
 
         // Get tokens to use
@@ -93,7 +93,7 @@ public class NewExpiringPurchaseTest extends TestBase {
     @Test
     public void failurePriceMismatch() {
         PsiCashLibTester pcl = new PsiCashLibTester();
-        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper());
+        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper(), false);
         assertNull(err);
 
         // Get tokens to use
@@ -111,7 +111,7 @@ public class NewExpiringPurchaseTest extends TestBase {
     @Test
     public void failureInsufficientBalance() {
         PsiCashLibTester pcl = new PsiCashLibTester();
-        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper());
+        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper(), false);
         assertNull(err);
 
         // Get tokens to use
@@ -129,7 +129,7 @@ public class NewExpiringPurchaseTest extends TestBase {
     @Test
     public void failureExistingTransaction() {
         PsiCashLibTester pcl = new PsiCashLibTester();
-        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper());
+        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper(), false);
         assertNull(err);
 
         // Get tokens to use
@@ -157,7 +157,7 @@ public class NewExpiringPurchaseTest extends TestBase {
     @Test
     public void failureServerErrors() {
         PsiCashLibTester pcl = new PsiCashLibTester();
-        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper());
+        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper(), false);
         assertNull(err);
 
         // Get tokens to use
@@ -191,7 +191,7 @@ public class NewExpiringPurchaseTest extends TestBase {
         // retrieved values.
 
         PsiCashLibTester pcl = new PsiCashLibTester();
-        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper());
+        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper(), false);
         assertNull(err);
 
         // Get tokens to use -- and our test purchase info
@@ -216,7 +216,7 @@ public class NewExpiringPurchaseTest extends TestBase {
     @Test
     public void checkLocalPurchase() {
         PsiCashLibTester pcl = new PsiCashLibTester();
-        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper());
+        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper(), false);
         assertNull(err);
 
         // Get tokens to use

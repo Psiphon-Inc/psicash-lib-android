@@ -286,14 +286,15 @@ public class PsiCashLib {
      * Initializes the library. Must be called before any other methods are invoked.
      * @param fileStoreRoot The directory where the library will store its data. Must exist.
      * @param httpRequester Helper used to make HTTP requests.
+     * @param forceReset If true, the PsiCash datastore will be reset.
      * @return null if no error; Error otherwise.
      */
     @Nullable
-    public Error init(String fileStoreRoot, HTTPRequester httpRequester) {
+    public Error init(String fileStoreRoot, HTTPRequester httpRequester, boolean forceReset) {
         Error res;
         writeLock.lock();
         try {
-            res = init(fileStoreRoot, httpRequester, false);
+            res = init(fileStoreRoot, httpRequester, forceReset, false);
         }
         finally {
             writeLock.unlock();
@@ -303,16 +304,19 @@ public class PsiCashLib {
 
     /**
      * Used internally for testing.
+     * @param fileStoreRoot The directory where the library will store its data. Must exist.
+     * @param httpRequester Helper used to make HTTP requests.
+     * @param forceReset If true, the PsiCash datastore will be reset.
      * @param test Should be true if testing mode (and server) is to be used.
      * @return null if no error; Error otherwise.
      */
     @Nullable
-    protected Error init(String fileStoreRoot, HTTPRequester httpRequester, boolean test) {
+    protected Error init(String fileStoreRoot, HTTPRequester httpRequester, boolean forceReset, boolean test) {
         this.httpRequester = httpRequester;
         writeLock.lock();
         String jsonStr;
         try {
-            jsonStr = this.NativeObjectInit(fileStoreRoot, test);
+            jsonStr = this.NativeObjectInit(fileStoreRoot, forceReset, test);
         }
         finally {
             writeLock.unlock();
@@ -1558,7 +1562,7 @@ public class PsiCashLib {
 
     private static native boolean NativeStaticInit();
 
-    private native String NativeObjectInit(String fileStoreRoot, boolean test);
+    private native String NativeObjectInit(String fileStoreRoot, boolean forceReset, boolean test);
 
     /**
      * @return { "error": {...} }

@@ -6,8 +6,8 @@ import java.util.List;
 
 public class PsiCashLibTester extends PsiCashLib {
     @Override
-    public Error init(String fileStoreRoot, HTTPRequester httpRequester) {
-        return init(fileStoreRoot, httpRequester, true);
+    public Error init(String fileStoreRoot, HTTPRequester httpRequester, boolean forceReset) {
+        return init(fileStoreRoot, httpRequester, forceReset, true);
     }
 
     @Nullable

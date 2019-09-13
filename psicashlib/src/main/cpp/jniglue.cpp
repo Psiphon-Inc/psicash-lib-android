@@ -57,6 +57,7 @@ Java_ca_psiphon_psicashlib_PsiCashLib_NativeObjectInit(
         JNIEnv* env,
         jobject /*this_obj*/,
         jstring j_file_store_root,
+        jboolean force_reset,
         jboolean test) {
     g_testing = test;
 
@@ -67,6 +68,13 @@ Java_ca_psiphon_psicashlib_PsiCashLib_NativeObjectInit(
     auto file_store_root = JStringToString(env, j_file_store_root);
     if (!file_store_root) {
         return JNI_(ERROR_CRITICAL("file_store_root is invalid"));
+    }
+
+    if (force_reset) {
+        auto err = GetPsiCash().Reset(file_store_root->c_str(), test);
+        if (err) {
+            return JNI_(WRAP_ERROR1(err, "PsiCash.Reset failed"));
+        }
     }
 
     // We can't set the HTTP requester function yet, as we can't cache `this_obj`.
