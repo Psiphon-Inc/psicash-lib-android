@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/psicash-lib-android.iml" filepath="$PROJECT_DIR$/psicash-lib-android.iml" />
-      <module fileurl="file://$PROJECT_DIR$/psicashlib/psicashlib.iml" filepath="$PROJECT_DIR$/psicashlib/psicashlib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" group="psicash-lib-android/app" />
+      <module fileurl="file://$PROJECT_DIR$/psicash-lib-android.iml" filepath="$PROJECT_DIR$/psicash-lib-android.iml" group="psicash-lib-android" />
+      <module fileurl="file://$PROJECT_DIR$/psicashlib/psicashlib.iml" filepath="$PROJECT_DIR$/psicashlib/psicashlib.iml" group="psicash-lib-android/psicashlib" />
     </modules>
   </component>
 </project>
