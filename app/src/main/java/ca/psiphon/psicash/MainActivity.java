@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
         tv.setText("Initial text");
 
         psiCashLib = new PsiCashLib();
-        PsiCashLib.Error err = psiCashLib.init(getFilesDir().toString(), new PsiCashLibHelper());
+        PsiCashLib.Error err = psiCashLib.init(getFilesDir().toString(), new PsiCashLibHelper(), false);
         if (err != null) {
             Log.e("PsiCashApp", err.message);
             return;
