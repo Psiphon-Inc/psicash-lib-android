@@ -1,4 +1,4 @@
-package ca.psiphon.psicashlib;
+package ca.psiphon.psicashlib.test;
 
 import org.junit.*;
 
@@ -6,7 +6,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static ca.psiphon.psicashlib.SecretTestValues.*;
+import ca.psiphon.psicashlib.PsiCashLib;
+
+import static ca.psiphon.psicashlib.test.SecretTestValues.*;
 import static org.junit.Assert.*;
 
 public class RemovePurchasesTest extends TestBase {

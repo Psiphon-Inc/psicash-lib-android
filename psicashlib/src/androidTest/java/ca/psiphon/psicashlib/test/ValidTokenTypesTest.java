@@ -1,5 +1,6 @@
-package ca.psiphon.psicashlib;
+package ca.psiphon.psicashlib.test;
 
+import ca.psiphon.psicashlib.PsiCashLib;
 import ca.psiphon.psicashlib.PsiCashLib.TokenType;
 import org.junit.*;
 

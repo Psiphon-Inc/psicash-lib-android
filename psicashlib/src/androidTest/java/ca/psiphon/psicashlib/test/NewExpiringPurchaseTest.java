@@ -1,11 +1,13 @@
-package ca.psiphon.psicashlib;
+package ca.psiphon.psicashlib.test;
 
 import org.junit.*;
 
 import java.util.Arrays;
 import java.util.Date;
 
-import static ca.psiphon.psicashlib.SecretTestValues.*;
+import ca.psiphon.psicashlib.PsiCashLib;
+
+import static ca.psiphon.psicashlib.test.SecretTestValues.*;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
@@ -61,9 +63,7 @@ public class NewExpiringPurchaseTest extends TestBase {
 
         // We start out with no tokens to use
         PsiCashLib.NewExpiringPurchaseResult nepr = pcl.newExpiringPurchase("invalid", "invalid", 1);
-        assertNull(nepr.error);
-        assertEquals(PsiCashLib.Status.INVALID_TOKENS, nepr.status);
-        assertNull(nepr.purchase);
+        assertNotNull(nepr.error);
     }
 
     @Test

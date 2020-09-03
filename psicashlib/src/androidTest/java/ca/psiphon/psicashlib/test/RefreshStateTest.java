@@ -1,4 +1,4 @@
-package ca.psiphon.psicashlib;
+package ca.psiphon.psicashlib.test;
 
 
 import org.junit.*;
@@ -7,7 +7,9 @@ import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 
-import static ca.psiphon.psicashlib.SecretTestValues.TEST_DEBIT_TRANSACTION_CLASS;
+import ca.psiphon.psicashlib.PsiCashLib;
+
+import static ca.psiphon.psicashlib.test.SecretTestValues.*;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 

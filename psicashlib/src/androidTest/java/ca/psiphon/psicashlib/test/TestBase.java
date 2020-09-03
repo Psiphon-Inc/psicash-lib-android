@@ -1,4 +1,4 @@
-package ca.psiphon.psicashlib;
+package ca.psiphon.psicashlib.test;
 
 import android.support.test.InstrumentationRegistry;
 import android.util.Log;
@@ -16,12 +16,16 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+
+import ca.psiphon.psicashlib.PsiCashLib;
 
 public class TestBase {
     private static File testSubDir;
@@ -145,6 +149,14 @@ public class TestBase {
                 if (reqParams.headers != null) {
                     for (Map.Entry<String, String> h : reqParams.headers.entrySet()) {
                         urlConn.setRequestProperty(h.getKey(), h.getValue());
+                    }
+                }
+
+                if (reqParams.body != null && !reqParams.body.isEmpty()) {
+                    urlConn.setDoOutput(true);
+                    try (OutputStream os = urlConn.getOutputStream()) {
+                        byte[] data = reqParams.body.getBytes(StandardCharsets.UTF_8);
+                        os.write(data);
                     }
                 }
 

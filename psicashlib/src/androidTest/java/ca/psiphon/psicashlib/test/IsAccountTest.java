@@ -1,10 +1,12 @@
-package ca.psiphon.psicashlib;
+package ca.psiphon.psicashlib.test;
 
 import org.junit.*;
 
+import ca.psiphon.psicashlib.PsiCashLib;
+
 import static org.junit.Assert.*;
 
-public class GetDiagnosticInfoTest extends TestBase {
+public class IsAccountTest extends TestBase {
     @Test
     public void simpleSuccess() {
         PsiCashLibTester pcl = new PsiCashLibTester();
@@ -12,29 +14,24 @@ public class GetDiagnosticInfoTest extends TestBase {
         assertNull(err);
 
         // Default value, before the first RefreshState
-        PsiCashLib.GetDiagnosticInfoResult gdir = pcl.getDiagnosticInfo();
-        assertNull(gdir.error);
-        assertNotNull(gdir.jsonString);
-        assertNotEquals(0, gdir.jsonString.length());
-        String firstResult = gdir.jsonString;
+        PsiCashLib.IsAccountResult iar = pcl.isAccount();
+        assertNull(iar.error);
+        assertFalse(iar.isAccount);
 
         // First RefreshState, which creates the tracker
         PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
-        gdir = pcl.getDiagnosticInfo();
-        assertNull(gdir.error);
-        assertNotNull(gdir.jsonString);
-        assertNotEquals(0, gdir.jsonString.length());
-        assertNotEquals(firstResult, gdir.jsonString);
+        iar = pcl.isAccount();
+        assertNull(iar.error);
+        assertFalse(iar.isAccount);
 
         // Second RefreshState, which just refreshes
         res = pcl.refreshState(null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
-        gdir = pcl.getDiagnosticInfo();
-        assertNull(gdir.error);
-        assertNotNull(gdir.jsonString);
-        assertNotEquals(0, gdir.jsonString.length());
+        iar = pcl.isAccount();
+        assertNull(iar.error);
+        assertFalse(iar.isAccount);
     }
 }

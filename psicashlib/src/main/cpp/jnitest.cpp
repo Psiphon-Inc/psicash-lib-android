@@ -31,7 +31,8 @@ error::Error PsiCashTest::TestReward(const string& transaction_class, const stri
     auto result = MakeHTTPRequestWithRetry(
             "POST", "/transaction", true,
             {{"class",         transaction_class},
-             {"distinguisher", distinguisher}});
+             {"distinguisher", distinguisher}},
+            {});
     if (!result) {
         return WrapError(result.error(), "MakeHTTPRequestWithRetry failed");
     } else if (result->code != kHTTPStatusOK) {
@@ -61,7 +62,7 @@ Java_ca_psiphon_psicashlib_PsiCashLib_NativeTestReward(
 
     auto err = GetPsiCashTester().MakeRewardRequests(*transaction_class, *distinguisher);
     if (err) {
-        return JNI_s(err.ToString());
+        return JNI_(err.ToString());
     }
 
     return nullptr;

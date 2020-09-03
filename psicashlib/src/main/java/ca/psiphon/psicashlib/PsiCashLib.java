@@ -38,6 +38,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class PsiCashLib {
     private final Lock writeLock = new ReentrantLock();
+    private boolean initialized = false;
 
     /**
      * The library user must implement this interface. It provides HTTP request
@@ -58,6 +59,7 @@ public class PsiCashLib {
             public String method;
             public Uri uri;
             public Map<String, String> headers;
+            public String body;
         }
 
         /**
@@ -114,7 +116,9 @@ public class PsiCashLib {
         TRANSACTION_AMOUNT_MISMATCH(3),
         TRANSACTION_TYPE_NOT_FOUND(4),
         INVALID_TOKENS(5),
-        SERVER_ERROR(6);
+        INVALID_CREDENTIALS(6),
+        BAD_REQUEST(7),
+        SERVER_ERROR(8);
 
         private final int code;
 
@@ -299,7 +303,18 @@ public class PsiCashLib {
         finally {
             writeLock.unlock();
         }
+        if (res == null) {
+            this.initialized = true;
+        }
         return res;
+    }
+
+    /**
+     * Indicates if the library has been successfully initialized.
+     * @return true if initialized, false otherwise.
+     */
+    public boolean isInitialized() {
+        return initialized;
     }
 
     /**
@@ -317,6 +332,24 @@ public class PsiCashLib {
         String jsonStr;
         try {
             jsonStr = this.NativeObjectInit(fileStoreRoot, forceReset, test);
+        }
+        finally {
+            writeLock.unlock();
+        }
+        JNI.Result.ErrorOnly res = new JNI.Result.ErrorOnly(jsonStr);
+        return res.error;
+    }
+
+    /**
+     * Resets the current user data. See psicash.hpp for full description.
+     * @return error
+     */
+    @Nullable
+    public Error resetUser() {
+        String jsonStr;
+        writeLock.lock();
+        try {
+            jsonStr = this.NativeResetUser();
         }
         finally {
             writeLock.unlock();
@@ -863,6 +896,60 @@ public class PsiCashLib {
         }
     }
 
+    /**
+     * Logs the user into an account.
+     * See psicash.hpp for full description.
+     */
+    @Nullable
+    public Error accountLogout() {
+        String jsonStr;
+        writeLock.lock();
+        try {
+            jsonStr = this.NativeAccountLogout();
+        }
+        finally {
+            writeLock.unlock();
+        }
+        JNI.Result.ErrorOnly res = new JNI.Result.ErrorOnly(jsonStr);
+        return res.error;
+    }
+
+    @NonNull
+    public AccountLoginResult accountLogin(String username, String password) {
+        String jsonStr;
+        writeLock.lock();
+        try {
+            jsonStr = this.NativeAccountLogin(username, password);
+        }
+        finally {
+            writeLock.unlock();
+        }
+        JNI.Result.AccountLogin res = new JNI.Result.AccountLogin(jsonStr);
+        return new AccountLoginResult(res);
+    }
+
+    /**
+     * Logs the user out of an account.
+     * See psicash.hpp for full description.
+     */
+    public static class AccountLoginResult {
+        // Indicates catastrophic inability to make request.
+        public Error error;
+        // Null iff error.
+        public Status status;
+        // Will be non-null iff tracker tokens were present to attempt to merge.
+        public Boolean lastTrackerMerge;
+
+        AccountLoginResult(JNI.Result.AccountLogin res) {
+            this.error = res.error;
+            if (this.error != null) {
+                return;
+            }
+            this.status = res.status;
+            this.lastTrackerMerge = res.lastTrackerMerge;
+        }
+    }
+
     //
     // END API ////////////////////////////////////////////////////////////////
     ///
@@ -909,6 +996,8 @@ public class PsiCashLib {
                         uriBuilder.appendQueryParameter(key, value);
                     }
                 }
+
+                reqParams.body = JSON.nullableString(json, "body");
             } catch (JSONException e) {
                 result.error = "Parsing request object failed: " + e.toString();
                 return result.toJSON();
@@ -1246,6 +1335,23 @@ public class PsiCashLib {
                     }
                 }
             }
+
+            private static class AccountLogin extends Base {
+                public Status status;
+                public Boolean lastTrackerMerge;
+
+                public AccountLogin(String jsonStr) {
+                    super(jsonStr);
+                }
+
+                @Override
+                public void fromJSON(JSONObject json, String key) throws JSONException {
+                    json = JSON.nonnullObject(json, key);
+
+                    this.status = Status.fromCode(JSON.nonnullInteger(json, kStatusKey));
+                    this.lastTrackerMerge = JSON.nullableBoolean(json, "last_tracker_merge");
+                }
+            }
         }
 
     }
@@ -1567,6 +1673,11 @@ public class PsiCashLib {
     /**
      * @return { "error": {...} }
      */
+    private native String NativeResetUser();
+
+    /**
+     * @return { "error": {...} }
+     */
     private native String NativeSetRequestMetadataItem(String key, String value);
 
     /**
@@ -1700,12 +1811,22 @@ public class PsiCashLib {
      * @return {
      * "error": {...},
      * "result": {
-     * "status": Status,
-     * "purchase": Purchase
+     *   "status": Status,
+     *   "purchase": Purchase
      * }
      * }
      */
     private native String NativeNewExpiringPurchase(String transactionClass, String distinguisher, long expectedPrice);
+
+    /**
+     * @return { "error": {...} }
+     */
+    private native String NativeAccountLogout();
+
+    /**
+     * @return { "error": {...} }
+     */
+    private native String NativeAccountLogin(String username, String password);
 
     /*
      * TEST ONLY Native functions

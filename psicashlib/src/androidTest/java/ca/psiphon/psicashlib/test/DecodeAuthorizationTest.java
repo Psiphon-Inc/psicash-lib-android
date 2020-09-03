@@ -1,8 +1,10 @@
-package ca.psiphon.psicashlib;
+package ca.psiphon.psicashlib.test;
 
 import org.junit.*;
 
 import java.util.Date;
+
+import ca.psiphon.psicashlib.PsiCashLib;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;

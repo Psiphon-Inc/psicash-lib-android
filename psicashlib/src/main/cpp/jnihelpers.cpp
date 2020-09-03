@@ -58,20 +58,39 @@ bool CheckJNIException(JNIEnv* env) {
     return false;
 }
 
-std::function<void(const char*)> StringUTFDeleter(JNIEnv* env, jstring j_param) {
-    return [=](const char* s) { env->ReleaseStringUTFChars(j_param, s); };
-}
-
-template<typename T>
-using deleted_unique_ptr = std::unique_ptr<T, std::function<void(T*)>>;
-
 nonstd::optional<std::string> JStringToString(JNIEnv* env, jstring j_s) {
     if (!j_s) {
         return nonstd::nullopt;
     }
 
-    deleted_unique_ptr<const char> s(env->GetStringUTFChars(j_s, NULL), StringUTFDeleter(env, j_s));
-    return std::string(s.get());
+    // JNI's GetStringUTFChars doesn't really give UTF-8 but "modified UTF-8". We don't
+    // want to be sending that through to the core library and the server, so we'll need
+    // to make some special effort. For details, see: https://stackoverflow.com/a/32215302
+
+    const jclass stringClass = env->GetObjectClass(j_s);
+    const jmethodID getBytes = env->GetMethodID(stringClass, "getBytes", "(Ljava/lang/String;)[B");
+
+    const jstring charsetName = env->NewStringUTF("UTF-8");
+    const jbyteArray stringJbytes = (jbyteArray)env->CallObjectMethod(j_s, getBytes, charsetName);
+    env->DeleteLocalRef(charsetName);
+
+    const jsize length = env->GetArrayLength(stringJbytes);
+    jbyte* pBytes = env->GetByteArrayElements(stringJbytes, NULL);
+
+    std::string res((char*)pBytes, length);
+
+    env->ReleaseByteArrayElements(stringJbytes, pBytes, JNI_ABORT);
+    env->DeleteLocalRef(stringJbytes);
+
+    return res;
+}
+
+jstring JNIify(JNIEnv* env, const char* str) {
+    return str ? env->NewStringUTF(str) : nullptr;
+}
+
+jstring JNIify(JNIEnv* env, const std::string& str) {
+    return !str.empty() ? env->NewStringUTF(str.c_str()) : nullptr;
 }
 
 string ErrorResponseFallback(const string& message) {
@@ -128,7 +147,8 @@ psicash::MakeHTTPRequestFn GetHTTPReqFn(JNIEnv* env, jobject& this_obj) {
                 {"method", params.method},
                 {"path", params.path},
                 {"headers", params.headers},
-                {"query", params.query}};
+                {"query", params.query},
+                {"body", params.body}};
 
             params_json = j.dump(-1, ' ', true);
         }

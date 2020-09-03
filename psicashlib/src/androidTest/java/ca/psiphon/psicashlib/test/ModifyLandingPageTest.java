@@ -1,6 +1,8 @@
-package ca.psiphon.psicashlib;
+package ca.psiphon.psicashlib.test;
 
 import org.junit.*;
+
+import ca.psiphon.psicashlib.PsiCashLib;
 
 import static org.junit.Assert.*;
 
