@@ -189,8 +189,8 @@ psicash::MakeHTTPRequestFn GetHTTPReqFn(JNIEnv* env, jobject& this_obj) {
                 result.body = j["body"].get<string>();
             }
 
-            if (!j["date"].is_null()) {
-                result.date = j["date"].get<string>();
+            if (!j["headers"].is_null()) {
+                result.headers = j["headers"].get<map<string, vector<string>>>();
             }
 
             if (!j["error"].is_null()) {

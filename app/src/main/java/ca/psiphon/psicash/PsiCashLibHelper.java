@@ -36,7 +36,7 @@ public class PsiCashLibHelper implements PsiCashLib.HTTPRequester {
             urlConn.connect();
 
             res.code = urlConn.getResponseCode();
-            res.date = urlConn.getHeaderField("Date");
+            res.headers = urlConn.getHeaderFields();
 
             // Read the input stream into a String
             InputStream inputStream;

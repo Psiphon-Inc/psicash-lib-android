@@ -74,7 +74,7 @@ public class PsiCashLib {
             // On critical error (e.g., programming fault or out-of-memory): CRITICAL_ERROR
             public int code = CRITICAL_ERROR;
             public String body;
-            public String date;
+            public Map<String, List<String>> headers;
             public String error;
 
             String toJSON() {
@@ -82,8 +82,23 @@ public class PsiCashLib {
                 try {
                     json.put("code", this.code);
                     json.put("body", this.body);
-                    json.put("date", this.date);
                     json.put("error", this.error);
+
+                    if (this.headers != null) {
+                        JSONObject headers = new JSONObject();
+                        for (Map.Entry<String, List<String>> entry : this.headers.entrySet()) {
+                            if (entry.getKey() == null) {
+                                // The Java headers object puts the first HTTP line under a null key
+                                continue;
+                            }
+                            headers.put(entry.getKey(), new JSONArray(entry.getValue()));
+                        }
+                        json.put("headers", headers);
+                    }
+                    else {
+                        json.put("headers", null);
+                    }
+
                     return json.toString();
                 } catch (JSONException e) {
                     e.printStackTrace();
