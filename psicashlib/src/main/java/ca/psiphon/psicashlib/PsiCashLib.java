@@ -393,34 +393,34 @@ public class PsiCashLib {
     }
 
     /*
-     * ValidTokenTypes
+     * HasTokens
      */
 
     /**
-     * Returns the stored valid token types. Like ["spender", "indicator"].
-     * @return List will be empty if no tokens are available.
+     * Returns true if there are sufficient tokens for this library to function on behalf
+     * of a user. False otherwise.
+     * If this is false and `IsAccount()` is true, then the user is a logged-out account
+     * and needs to log in to continue. If this is false and `IsAccount()` is false,
+     * `RefreshState()` needs to be called to get new Tracker tokens.
      */
     @NonNull
-    public ValidTokenTypesResult validTokenTypes() {
-        String jsonStr = this.NativeValidTokenTypes();
-        JNI.Result.ValidTokenTypes res = new JNI.Result.ValidTokenTypes(jsonStr);
-        return new ValidTokenTypesResult(res);
+    public HasTokensResult hasTokens() {
+        String jsonStr = this.NativeHasTokens();
+        JNI.Result.HasTokens res = new JNI.Result.HasTokens(jsonStr);
+        return new HasTokensResult(res);
     }
 
-    public static class ValidTokenTypesResult {
+    public static class HasTokensResult {
         // Expected to be null; indicates glue problem.
         public Error error;
+        public boolean hasTokens;
 
-        // Null iff error (which is not expected).
-        // Will be empty if no tokens are available.
-        public List<TokenType> validTokenTypes;
-
-        ValidTokenTypesResult(JNI.Result.ValidTokenTypes res) {
+        HasTokensResult(JNI.Result.HasTokens res) {
             this.error = res.error;
             if (this.error != null) {
                 return;
             }
-            this.validTokenTypes = res.validTokenTypes;
+            this.hasTokens = res.hasTokens;
         }
     }
 
@@ -1109,25 +1109,16 @@ public class PsiCashLib {
                 }
             }
 
-            private static class ValidTokenTypes extends Base {
-                List<TokenType> validTokenTypes;
+            private static class HasTokens extends Base {
+                boolean hasTokens;
 
-                public ValidTokenTypes(String jsonStr) {
+                public HasTokens(String jsonStr) {
                     super(jsonStr);
                 }
 
                 @Override
-                public void fromJSON(JSONObject json, String key) {
-                    // Allow for an null list (probably won't happen, but could represent no valid token types).
-                    // We can't pass TokenType.class to JSON.nullableList as it's an enum
-                    // and we'll get null back.
-                    List<String> vttStrings = JSON.nullableList(String.class, json, key);
-                    if (vttStrings != null) {
-                        this.validTokenTypes = new ArrayList<>(vttStrings.size());
-                        for (int i = 0; i < vttStrings.size(); i++) {
-                            this.validTokenTypes.add(i, TokenType.fromName(vttStrings.get(i)));
-                        }
-                    }
+                public void fromJSON(JSONObject json, String key) throws JSONException {
+                    this.hasTokens = JSON.nonnullBoolean(json, key);
                 }
             }
 
@@ -1701,15 +1692,15 @@ public class PsiCashLib {
      * "result": boolean
      * }
      */
-    private native String NativeIsAccount();
+    private native String NativeHasTokens();
 
     /**
      * @return {
      * "error": {...},
-     * "result": ["earner", "indicator", ...]
+     * "result": boolean
      * }
      */
-    private native String NativeValidTokenTypes();
+    private native String NativeIsAccount();
 
     /**
      * @return {

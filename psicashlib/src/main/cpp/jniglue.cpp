@@ -112,12 +112,11 @@ Java_ca_psiphon_psicashlib_PsiCashLib_NativeSetRequestMetadataItem(
 
 extern "C" JNIEXPORT jstring
 JNICALL
-Java_ca_psiphon_psicashlib_PsiCashLib_NativeValidTokenTypes(
+Java_ca_psiphon_psicashlib_PsiCashLib_NativeHasTokens(
         JNIEnv* env,
         jobject /*this_obj*/)
 {
-    auto vtt = GetPsiCash().ValidTokenTypes();
-    return JNI_(SuccessResponse(vtt));
+    return JNI_(SuccessResponse(GetPsiCash().HasTokens()));
 }
 
 extern "C" JNIEXPORT jstring

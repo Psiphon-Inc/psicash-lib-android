@@ -32,20 +32,20 @@ public class AccountLoginTest extends TestBase {
         alr = pcl.accountLogin(TEST_ACCOUNT_ONE_USERNAME, TEST_ACCOUNT_ONE_PASSWORD);
         assertNull(alr.error);
         assertEquals(PsiCashLib.Status.SUCCESS, alr.status);
-        assertNotEquals(0, pcl.validTokenTypes().validTokenTypes.size());
+        assertTrue(pcl.hasTokens().hasTokens);
         assertTrue(pcl.isAccount().isAccount);
 
         // Good credentials with non-ASCII characters
         alr = pcl.accountLogin(TEST_ACCOUNT_UNICODE_USERNAME, TEST_ACCOUNT_UNICODE_PASSWORD);
         assertNull(alr.error);
         assertEquals(PsiCashLib.Status.SUCCESS, alr.status);
-        assertThat(pcl.validTokenTypes().validTokenTypes.size(), is(3));
+        assertTrue(pcl.hasTokens().hasTokens);
         assertTrue(pcl.isAccount().isAccount);
 
         PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
-        assertThat(pcl.validTokenTypes().validTokenTypes.size(), is(3));
+        assertTrue(pcl.hasTokens().hasTokens);
         assertTrue(pcl.isAccount().isAccount);
         assertThat(pcl.balance().balance, greaterThan(MAX_STARTING_BALANCE));
     }

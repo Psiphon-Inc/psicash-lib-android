@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
             PsiCashLib.RefreshStateResult rsr = psiCashLib.refreshState(purchaseClasses);
 
             PsiCashLib.IsAccountResult isAccount = psiCashLib.isAccount();
-            PsiCashLib.ValidTokenTypesResult vtt = psiCashLib.validTokenTypes();
+            PsiCashLib.HasTokensResult htr = psiCashLib.hasTokens();
             PsiCashLib.BalanceResult b = psiCashLib.balance();
             PsiCashLib.GetPurchasePricesResult pp = psiCashLib.getPurchasePrices();
             PsiCashLib.GetPurchasesResult gpr = psiCashLib.getPurchases();

@@ -22,21 +22,21 @@ public class ResetUserTest extends TestBase {
         assertNull(alr.error);
         assertEquals(PsiCashLib.Status.SUCCESS, alr.status);
         assertTrue(pcl.isAccount().isAccount);
-        assertThat(pcl.validTokenTypes().validTokenTypes.size(), is(3));
+        assertTrue(pcl.hasTokens().hasTokens);
         assertEquals(0, pcl.balance().balance);
 
         // Logout
         err = pcl.accountLogout();
         assertNull(err);
         assertTrue(pcl.isAccount().isAccount);
-        assertEquals(0, pcl.validTokenTypes().validTokenTypes.size());
+        assertFalse(pcl.hasTokens().hasTokens);
         assertEquals(0, pcl.balance().balance);
 
         // Reset user state
         err = pcl.resetUser();
         assertNull(err);
         assertFalse(pcl.isAccount().isAccount); // no longer an account
-        assertEquals(0, pcl.validTokenTypes().validTokenTypes.size());
+        assertFalse(pcl.hasTokens().hasTokens);
         assertEquals(0, pcl.balance().balance);
     }
 }

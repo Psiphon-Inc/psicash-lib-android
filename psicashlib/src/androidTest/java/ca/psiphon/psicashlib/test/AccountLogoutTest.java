@@ -22,21 +22,21 @@ public class AccountLogoutTest extends TestBase {
         assertNull(alr.error);
         assertEquals(PsiCashLib.Status.SUCCESS, alr.status);
         assertTrue(pcl.isAccount().isAccount);
-        assertThat(pcl.validTokenTypes().validTokenTypes.size(), is(3));
+        assertTrue(pcl.hasTokens().hasTokens);
         assertEquals(0, pcl.balance().balance);
 
         PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
         assertTrue(pcl.isAccount().isAccount);
-        assertThat(pcl.validTokenTypes().validTokenTypes.size(), is(3));
+        assertTrue(pcl.hasTokens().hasTokens);
         assertThat(pcl.balance().balance, greaterThan(MAX_STARTING_BALANCE));
 
         // Logout
         err = pcl.accountLogout();
         assertNull(err);
         assertTrue(pcl.isAccount().isAccount);
-        assertEquals(0, pcl.validTokenTypes().validTokenTypes.size());
+        assertFalse(pcl.hasTokens().hasTokens);
         assertEquals(0, pcl.balance().balance);
 
         // Good credentials with non-ASCII characters
@@ -44,21 +44,21 @@ public class AccountLogoutTest extends TestBase {
         assertNull(alr.error);
         assertEquals(PsiCashLib.Status.SUCCESS, alr.status);
         assertTrue(pcl.isAccount().isAccount);
-        assertThat(pcl.validTokenTypes().validTokenTypes.size(), is(3));
+        assertTrue(pcl.hasTokens().hasTokens);
         assertEquals(0, pcl.balance().balance);
 
         res = pcl.refreshState(null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
         assertTrue(pcl.isAccount().isAccount);
-        assertThat(pcl.validTokenTypes().validTokenTypes.size(), is(3));
+        assertTrue(pcl.hasTokens().hasTokens);
         assertThat(pcl.balance().balance, greaterThan(MAX_STARTING_BALANCE));
 
         // Logout
         err = pcl.accountLogout();
         assertNull(err);
         assertTrue(pcl.isAccount().isAccount);
-        assertEquals(0, pcl.validTokenTypes().validTokenTypes.size());
+        assertFalse(pcl.hasTokens().hasTokens);
         assertEquals(0, pcl.balance().balance);
     }
 }
