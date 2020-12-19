@@ -304,6 +304,26 @@ Java_ca_psiphon_psicashlib_PsiCashLib_NativeModifyLandingPage(
 
 extern "C" JNIEXPORT jstring
 JNICALL
+Java_ca_psiphon_psicashlib_PsiCashLib_NativeGetAccountSignupURL(
+        JNIEnv* env,
+        jobject /*this_obj*/)
+{
+    auto result = GetPsiCash().GetAccountSignupURL();
+    return JNI_(result);
+}
+
+extern "C" JNIEXPORT jstring
+JNICALL
+Java_ca_psiphon_psicashlib_PsiCashLib_NativeGetAccountManagementURL(
+        JNIEnv* env,
+        jobject /*this_obj*/)
+{
+    auto result = GetPsiCash().GetAccountManagementURL();
+    return JNI_(result);
+}
+
+extern "C" JNIEXPORT jstring
+JNICALL
 Java_ca_psiphon_psicashlib_PsiCashLib_NativeGetRewardedActivityData(
         JNIEnv* env,
         jobject /*this_obj*/)

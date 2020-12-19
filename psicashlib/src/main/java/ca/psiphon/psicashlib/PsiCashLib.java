@@ -768,6 +768,24 @@ public class PsiCashLib {
     }
 
     /**
+     * Retrieves the PsiCash account signup page URL.
+     * @return The URL of the signup page.
+     */
+    @NonNull
+    public String getAccountSignupURL() {
+        return this.NativeGetAccountSignupURL();
+    }
+
+    /**
+     * Retrieves the PsiCash account management page URL.
+     * @return The URL of the management page.
+     */
+    @NonNull
+    public String getAccountManagementURL() {
+        return this.NativeGetAccountManagementURL();
+    }
+
+    /**
      * Creates a data package that should be included with a webhook for a user
      * action that should be rewarded (such as watching a rewarded video).
      * NOTE: The resulting string will still need to be encoded for use in a URL.
@@ -1788,6 +1806,22 @@ public class PsiCashLib {
      * }
      */
     private native String NativeModifyLandingPage(String url);
+
+    /**
+     * @return {
+     * "error": {...}
+     * "result": url string
+     * }
+     */
+    private native String NativeGetAccountSignupURL();
+
+    /**
+     * @return {
+     * "error": {...}
+     * "result": url string
+     * }
+     */
+    private native String NativeGetAccountManagementURL();
 
     /**
      * @return {

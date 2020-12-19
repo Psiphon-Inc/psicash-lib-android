@@ -48,6 +48,9 @@ public class MainActivity extends AppCompatActivity {
                 Log.e("PsiCashApp", error.message);
             }
 
+            String accountSignupURL = psiCashLib.getAccountSignupURL();
+            String accountManagementURL = psiCashLib.getAccountManagementURL();
+
             List<String> purchaseClasses = new ArrayList<>(Arrays.asList("speed-boost"));
             PsiCashLib.RefreshStateResult rsr = psiCashLib.refreshState(purchaseClasses);
 
