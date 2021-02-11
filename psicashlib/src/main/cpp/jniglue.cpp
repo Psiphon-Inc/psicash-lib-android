@@ -379,7 +379,9 @@ Java_ca_psiphon_psicashlib_PsiCashLib_NativeRefreshState(
         return JNI_(WRAP_ERROR(result.error()));
     }
 
-    return JNI_(SuccessResponse(*result));
+    auto output = json::object({{"status",             result->status},
+                                {"reconnect_required", result->reconnect_required}});
+    return JNI_(SuccessResponse(output));
 }
 
 /*
@@ -433,7 +435,13 @@ Java_ca_psiphon_psicashlib_PsiCashLib_NativeAccountLogout(
 {
     GetPsiCash().SetHTTPRequestFn(GetHTTPReqFn(env, this_obj));
 
-    return JNI_(WRAP_ERROR(GetPsiCash().AccountLogout()));
+    auto result = GetPsiCash().AccountLogout();
+    if (!result) {
+        return JNI_(WRAP_ERROR(result.error()));
+    }
+
+    auto output = json::object({{"reconnect_required", result->reconnect_required}});
+    return JNI_(SuccessResponse(output));
 }
 
 /*
@@ -468,7 +476,7 @@ Java_ca_psiphon_psicashlib_PsiCashLib_NativeAccountLogin(
         return JNI_(WRAP_ERROR(result.error()));
     }
 
-    auto output = json::object({{"status",   result->status},
+    auto output = json::object({{"status",             result->status},
                                 {"last_tracker_merge", nullptr}});
     if (result->last_tracker_merge) {
         output["last_tracker_merge"] = *result->last_tracker_merge;

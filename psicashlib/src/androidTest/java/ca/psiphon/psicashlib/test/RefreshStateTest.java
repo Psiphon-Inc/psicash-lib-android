@@ -37,6 +37,7 @@ public class RefreshStateTest extends TestBase {
         PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
+        assertFalse(res.reconnectRequired);
         iar = pcl.isAccount();
         assertNull(iar.error);
         assertFalse(iar.isAccount);
@@ -51,6 +52,7 @@ public class RefreshStateTest extends TestBase {
         res = pcl.refreshState(null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
+        assertFalse(res.reconnectRequired);
         iar = pcl.isAccount();
         assertNull(iar.error);
         assertFalse(iar.isAccount);
@@ -71,6 +73,7 @@ public class RefreshStateTest extends TestBase {
         PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
+        assertFalse(res.reconnectRequired);
         PsiCashLib.IsAccountResult iar = pcl.isAccount();
         assertNull(iar.error);
         assertFalse(iar.isAccount);
@@ -88,6 +91,7 @@ public class RefreshStateTest extends TestBase {
         res = pcl.refreshState(null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
+        assertFalse(res.reconnectRequired);
 
         br = pcl.balance();
         assertNull(br.error);
@@ -106,9 +110,79 @@ public class RefreshStateTest extends TestBase {
         PsiCashLib.RefreshStateResult res = pcl.refreshState(Arrays.asList("speed-boost", TEST_DEBIT_TRANSACTION_CLASS));
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
+        assertFalse(res.reconnectRequired);
 
         gppr = pcl.getPurchasePrices();
         assertThat(gppr.purchasePrices.size(), greaterThan(0));
+    }
+
+    @Test
+    public void reconnectRequired() {
+        PsiCashLibTester pcl = new PsiCashLibTester();
+        PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper(), false);
+        assertNull(err);
+
+        // Login
+        PsiCashLib.AccountLoginResult loginResult = pcl.accountLogin(TEST_ACCOUNT_ONE_USERNAME, TEST_ACCOUNT_ONE_PASSWORD);
+        assertNull(loginResult.error);
+        assertEquals(PsiCashLib.Status.SUCCESS, loginResult.status);
+        PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
+        assertNull(conds(res.error, "message"), res.error);
+        assertEquals(PsiCashLib.Status.SUCCESS, res.status);
+
+        // Get some credit to spend
+        err = pcl.testReward(2);
+        assertNull(err);
+
+        // Make purchase WITHOUT Authorization, so no reconnect required
+        PsiCashLib.NewExpiringPurchaseResult nepr = pcl.newExpiringPurchase(TEST_DEBIT_TRANSACTION_CLASS, TEST_ONE_TRILLION_TEN_SECOND_DISTINGUISHER, ONE_TRILLION);
+        assertNull(nepr.error);
+        assertEquals(PsiCashLib.Status.SUCCESS, nepr.status);
+
+        // Logout
+        PsiCashLib.AccountLogoutResult logoutResult = pcl.accountLogout();
+        assertNull(logoutResult.error);
+        assertFalse(logoutResult.reconnectRequired);
+
+        // Login again
+        loginResult = pcl.accountLogin(TEST_ACCOUNT_ONE_USERNAME, TEST_ACCOUNT_ONE_PASSWORD);
+        assertNull(loginResult.error);
+        assertEquals(PsiCashLib.Status.SUCCESS, loginResult.status);
+
+        // Refresh will sync the purchase, but it doesn't require a reconnect
+        res = pcl.refreshState(null);
+        assertNull(conds(res.error, "message"), res.error);
+        assertEquals(PsiCashLib.Status.SUCCESS, res.status);
+        assertFalse(res.reconnectRequired);
+        PsiCashLib.ActivePurchasesResult apr = pcl.activePurchases();
+        assertNull(apr.error);
+        assertNotNull(apr.purchases);
+        assertThat(apr.purchases, hasSize(1));
+
+        // Make purchase WITH Authorization, requiring reconnect on logout
+        nepr = pcl.newExpiringPurchase(TEST_DEBIT_WITH_AUTHORIZATION_TRANSACTION_CLASS, TEST_ONE_TRILLION_TEN_SECOND_DISTINGUISHER, ONE_TRILLION);
+        assertNull(nepr.error);
+        assertEquals(PsiCashLib.Status.SUCCESS, nepr.status);
+
+        // Logout
+        logoutResult = pcl.accountLogout();
+        assertNull(logoutResult.error);
+        assertTrue(logoutResult.reconnectRequired);
+
+        // Login again
+        loginResult = pcl.accountLogin(TEST_ACCOUNT_ONE_USERNAME, TEST_ACCOUNT_ONE_PASSWORD);
+        assertNull(loginResult.error);
+        assertEquals(PsiCashLib.Status.SUCCESS, loginResult.status);
+
+        // Refresh will sync both purchase, and now we require a reconnect
+        res = pcl.refreshState(null);
+        assertNull(conds(res.error, "message"), res.error);
+        assertEquals(PsiCashLib.Status.SUCCESS, res.status);
+        assertTrue(res.reconnectRequired);
+        apr = pcl.activePurchases();
+        assertNull(apr.error);
+        assertNotNull(apr.purchases);
+        assertThat(apr.purchases, hasSize(2));
     }
 
     @Test
@@ -121,16 +195,19 @@ public class RefreshStateTest extends TestBase {
         PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
         assertNull(res.error);
         assertEquals(PsiCashLib.Status.SERVER_ERROR, res.status);
+        assertFalse(res.reconnectRequired);
 
         pcl.setRequestMutator("Timeout:11");
         res = pcl.refreshState(null);
         assertNotNull(res.error);
         assertThat(res.error.message, either(containsString("timeout")).or(containsString("Timeout")));
+        assertFalse(res.reconnectRequired);
 
         pcl.setRequestMutator("Response:code=666");
         res = pcl.refreshState(null);
         assertNotNull(res.error);
         assertThat(res.error.message, containsString("666"));
+        assertFalse(res.reconnectRequired);
     }
 
     @Test

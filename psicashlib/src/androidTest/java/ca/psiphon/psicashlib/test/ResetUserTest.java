@@ -18,16 +18,16 @@ public class ResetUserTest extends TestBase {
         assertNull(err);
 
         // Login
-        PsiCashLib.AccountLoginResult alr = pcl.accountLogin(TEST_ACCOUNT_ONE_USERNAME, TEST_ACCOUNT_ONE_PASSWORD);
-        assertNull(alr.error);
-        assertEquals(PsiCashLib.Status.SUCCESS, alr.status);
+        PsiCashLib.AccountLoginResult loginResult = pcl.accountLogin(TEST_ACCOUNT_ONE_USERNAME, TEST_ACCOUNT_ONE_PASSWORD);
+        assertNull(loginResult.error);
+        assertEquals(PsiCashLib.Status.SUCCESS, loginResult.status);
         assertTrue(pcl.isAccount().isAccount);
         assertTrue(pcl.hasTokens().hasTokens);
         assertEquals(0, pcl.balance().balance);
 
         // Logout
-        err = pcl.accountLogout();
-        assertNull(err);
+        PsiCashLib.AccountLogoutResult logoutResult = pcl.accountLogout();
+        assertNull(logoutResult.error);
         assertTrue(pcl.isAccount().isAccount);
         assertFalse(pcl.hasTokens().hasTokens);
         assertEquals(0, pcl.balance().balance);

@@ -875,9 +875,12 @@ public class PsiCashLib {
         public Error error;
         // Null iff error.
         public Status status;
+        // True when a tunnel reconnect is required as a result of this logout.
+        public boolean reconnectRequired;
 
         RefreshStateResult(JNI.Result.RefreshState res) {
             this.error = res.error;
+            this.reconnectRequired = res.reconnectRequired;
             if (this.error != null) {
                 return;
             }
@@ -934,7 +937,7 @@ public class PsiCashLib {
      * See psicash.hpp for full description.
      */
     @Nullable
-    public Error accountLogout() {
+    public AccountLogoutResult accountLogout() {
         String jsonStr;
         writeLock.lock();
         try {
@@ -943,10 +946,26 @@ public class PsiCashLib {
         finally {
             writeLock.unlock();
         }
-        JNI.Result.ErrorOnly res = new JNI.Result.ErrorOnly(jsonStr);
-        return res.error;
+        JNI.Result.AccountLogout res = new JNI.Result.AccountLogout(jsonStr);
+        return new AccountLogoutResult(res);
     }
 
+    public static class AccountLogoutResult {
+        // Indicates catastrophic inability to make request.
+        public Error error;
+        // True when a tunnel reconnect is required as a result of this logout.
+        public boolean reconnectRequired;
+
+        AccountLogoutResult(JNI.Result.AccountLogout res) {
+            this.error = res.error;
+            this.reconnectRequired = res.reconnectRequired;
+        }
+    }
+
+    /**
+     * Logs the user out of an account.
+     * See psicash.hpp for full description.
+     */
     @NonNull
     public AccountLoginResult accountLogin(String username, String password) {
         String jsonStr;
@@ -961,10 +980,6 @@ public class PsiCashLib {
         return new AccountLoginResult(res);
     }
 
-    /**
-     * Logs the user out of an account.
-     * See psicash.hpp for full description.
-     */
     public static class AccountLoginResult {
         // Indicates catastrophic inability to make request.
         public Error error;
@@ -1325,6 +1340,7 @@ public class PsiCashLib {
 
             private static class RefreshState extends Base {
                 public Status status;
+                public boolean reconnectRequired;
 
                 public RefreshState(String jsonStr) {
                     super(jsonStr);
@@ -1332,7 +1348,9 @@ public class PsiCashLib {
 
                 @Override
                 public void fromJSON(JSONObject json, String key) throws JSONException {
-                    this.status = Status.fromCode(JSON.nonnullInteger(json, key));
+                    json = JSON.nonnullObject(json, key);
+                    this.status = Status.fromCode(JSON.nonnullInteger(json, kStatusKey));
+                    this.reconnectRequired = JSON.nonnullBoolean(json, "reconnect_required");
                 }
             }
 
@@ -1357,6 +1375,20 @@ public class PsiCashLib {
                         // Not a sane state.
                         throw new JSONException("NewExpiringPurchase.fromJSON got SUCCESS but no purchase object");
                     }
+                }
+            }
+
+            private static class AccountLogout extends Base {
+                public boolean reconnectRequired;
+
+                public AccountLogout(String jsonStr) {
+                    super(jsonStr);
+                }
+
+                @Override
+                public void fromJSON(JSONObject json, String key) throws JSONException {
+                    json = JSON.nonnullObject(json, key);
+                    this.reconnectRequired = JSON.nonnullBoolean(json, "reconnect_required");
                 }
             }
 
@@ -1843,6 +1875,7 @@ public class PsiCashLib {
      * @return {
      * "error": {...},
      * "result": Status
+     * "reconnect_required": boolean
      * }
      */
     private native String NativeRefreshState(String[] purchaseClasses);
@@ -1859,7 +1892,10 @@ public class PsiCashLib {
     private native String NativeNewExpiringPurchase(String transactionClass, String distinguisher, long expectedPrice);
 
     /**
-     * @return { "error": {...} }
+     * @return {
+     * "error": {...},
+     * "reconnect_required": boolean
+     * }
      */
     private native String NativeAccountLogout();
 
