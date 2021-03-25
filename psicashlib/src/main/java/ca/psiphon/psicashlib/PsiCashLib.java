@@ -936,7 +936,7 @@ public class PsiCashLib {
      * Logs the user into an account.
      * See psicash.hpp for full description.
      */
-    @Nullable
+    @NonNull
     public AccountLogoutResult accountLogout() {
         String jsonStr;
         writeLock.lock();
@@ -963,7 +963,7 @@ public class PsiCashLib {
     }
 
     /**
-     * Logs the user out of an account.
+     * Logs the user into an account.
      * See psicash.hpp for full description.
      */
     @NonNull
