@@ -777,6 +777,15 @@ public class PsiCashLib {
     }
 
     /**
+     * Retrieves the PsiCash account forgot credentials page URL.
+     * @return The URL of the forgot credentials page.
+     */
+    @NonNull
+    public String getAccountForgotURL() {
+        return this.NativeGetAccountForgotURL();
+    }
+
+    /**
      * Retrieves the PsiCash account management page URL.
      * @return The URL of the management page.
      */
@@ -941,7 +950,7 @@ public class PsiCashLib {
         String jsonStr;
         writeLock.lock();
         try {
-            jsonStr = this.NativeAccountLogout();
+            jsonStr = this.NativeAccountLogout(false);
         }
         finally {
             writeLock.unlock();
@@ -1853,6 +1862,14 @@ public class PsiCashLib {
      * "result": url string
      * }
      */
+    private native String NativeGetAccountForgotURL();
+
+    /**
+     * @return {
+     * "error": {...}
+     * "result": url string
+     * }
+     */
     private native String NativeGetAccountManagementURL();
 
     /**
@@ -1897,7 +1914,7 @@ public class PsiCashLib {
      * "reconnect_required": boolean
      * }
      */
-    private native String NativeAccountLogout();
+    private native String NativeAccountLogout(boolean localOnly);
 
     /**
      * @return { "error": {...} }

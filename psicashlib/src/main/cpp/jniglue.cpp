@@ -308,7 +308,17 @@ Java_ca_psiphon_psicashlib_PsiCashLib_NativeGetAccountSignupURL(
         JNIEnv* env,
         jobject /*this_obj*/)
 {
-    auto result = GetPsiCash().GetAccountSignupURL();
+    auto result = GetPsiCash().GetUserSiteURL(psicash::PsiCash::UserSiteURLType::AccountSignup, true);
+    return JNI_(result);
+}
+
+extern "C" JNIEXPORT jstring
+JNICALL
+Java_ca_psiphon_psicashlib_PsiCashLib_NativeGetAccountForgotURL(
+        JNIEnv* env,
+        jobject /*this_obj*/)
+{
+    auto result = GetPsiCash().GetUserSiteURL(psicash::PsiCash::UserSiteURLType::ForgotAccount, true);
     return JNI_(result);
 }
 
@@ -318,7 +328,7 @@ Java_ca_psiphon_psicashlib_PsiCashLib_NativeGetAccountManagementURL(
         JNIEnv* env,
         jobject /*this_obj*/)
 {
-    auto result = GetPsiCash().GetAccountManagementURL();
+    auto result = GetPsiCash().GetUserSiteURL(psicash::PsiCash::UserSiteURLType::AccountManagement, true);
     return JNI_(result);
 }
 
@@ -431,11 +441,12 @@ extern "C" JNIEXPORT jstring
 JNICALL
 Java_ca_psiphon_psicashlib_PsiCashLib_NativeAccountLogout(
         JNIEnv* env,
-        jobject this_obj)
+        jobject this_obj,
+        jboolean local_only)
 {
     GetPsiCash().SetHTTPRequestFn(GetHTTPReqFn(env, this_obj));
 
-    auto result = GetPsiCash().AccountLogout();
+    auto result = GetPsiCash().AccountLogout(local_only);
     if (!result) {
         return JNI_(WRAP_ERROR(result.error()));
     }

@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
 
             String accountSignupURL = psiCashLib.getAccountSignupURL();
             String accountManagementURL = psiCashLib.getAccountManagementURL();
+            String accountForgotURL = psiCashLib.getAccountForgotURL();
 
             List<String> purchaseClasses = new ArrayList<>(Arrays.asList("speed-boost"));
             PsiCashLib.RefreshStateResult rsr = psiCashLib.refreshState(purchaseClasses);
