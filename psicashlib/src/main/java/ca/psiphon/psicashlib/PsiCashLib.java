@@ -392,6 +392,24 @@ public class PsiCashLib {
         return res.error;
     }
 
+    /**
+     * Set locale string that will be included with user site URLs
+     * @return null if no error; Error otherwise.
+     */
+    @Nullable
+    public Error setLocale(@NonNull String locale) {
+        String jsonStr;
+        writeLock.lock();
+        try {
+            jsonStr = this.NativeSetLocale(locale);
+        }
+        finally {
+            writeLock.unlock();
+        }
+        JNI.Result.ErrorOnly res = new JNI.Result.ErrorOnly(jsonStr);
+        return res.error;
+    }
+
     /*
      * HasTokens
      */
@@ -1744,6 +1762,11 @@ public class PsiCashLib {
      * @return { "error": {...} }
      */
     private native String NativeSetRequestMetadataItem(String key, String value);
+
+    /**
+     * @return { "error": {...} }
+     */
+    private native String NativeSetLocale(String locale);
 
     /**
      * @return {

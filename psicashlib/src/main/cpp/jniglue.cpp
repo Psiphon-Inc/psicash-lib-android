@@ -110,6 +110,21 @@ Java_ca_psiphon_psicashlib_PsiCashLib_NativeSetRequestMetadataItem(
     return JNI_(WRAP_ERROR(GetPsiCash().SetRequestMetadataItem(*key, *value)));
 }
 
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_ca_psiphon_psicashlib_PsiCashLib_NativeSetLocale(
+        JNIEnv* env,
+        jobject /*this_obj*/,
+        jstring j_value)
+{
+    auto value = JStringToString(env, j_value);
+    if (!value) {
+        return JNI_(ERROR_CRITICAL("value must be non-null"));
+    }
+
+    return JNI_(WRAP_ERROR(GetPsiCash().SetLocale(*value)));
+}
+
 extern "C" JNIEXPORT jstring
 JNICALL
 Java_ca_psiphon_psicashlib_PsiCashLib_NativeHasTokens(
