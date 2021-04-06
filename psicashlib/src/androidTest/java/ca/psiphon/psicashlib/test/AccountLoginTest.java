@@ -42,7 +42,7 @@ public class AccountLoginTest extends TestBase {
         assertTrue(pcl.hasTokens().hasTokens);
         assertTrue(pcl.isAccount().isAccount);
 
-        PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
+        PsiCashLib.RefreshStateResult res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
         assertTrue(pcl.hasTokens().hasTokens);

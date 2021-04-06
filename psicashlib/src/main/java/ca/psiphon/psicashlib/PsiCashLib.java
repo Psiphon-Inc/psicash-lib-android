@@ -881,14 +881,14 @@ public class PsiCashLib {
      * for the reason indicated by the status.
      */
     @NonNull
-    public RefreshStateResult refreshState(List<String> purchaseClasses) {
+    public RefreshStateResult refreshState(boolean localOnly, List<String> purchaseClasses) {
         if (purchaseClasses == null) {
             purchaseClasses = new ArrayList<>();
         }
         String jsonStr;
         writeLock.lock();
         try {
-            jsonStr = this.NativeRefreshState(purchaseClasses.toArray(new String[0]));
+            jsonStr = this.NativeRefreshState(localOnly, purchaseClasses.toArray(new String[0]));
         }
         finally {
             writeLock.unlock();
@@ -968,7 +968,7 @@ public class PsiCashLib {
         String jsonStr;
         writeLock.lock();
         try {
-            jsonStr = this.NativeAccountLogout(false);
+            jsonStr = this.NativeAccountLogout();
         }
         finally {
             writeLock.unlock();
@@ -1918,7 +1918,7 @@ public class PsiCashLib {
      * "reconnect_required": boolean
      * }
      */
-    private native String NativeRefreshState(String[] purchaseClasses);
+    private native String NativeRefreshState(boolean localOnly, String[] purchaseClasses);
 
     /**
      * @return {
@@ -1937,7 +1937,7 @@ public class PsiCashLib {
      * "reconnect_required": boolean
      * }
      */
-    private native String NativeAccountLogout(boolean localOnly);
+    private native String NativeAccountLogout();
 
     /**
      * @return { "error": {...} }

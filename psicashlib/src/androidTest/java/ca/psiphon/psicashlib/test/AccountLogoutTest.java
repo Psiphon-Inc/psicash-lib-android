@@ -25,7 +25,7 @@ public class AccountLogoutTest extends TestBase {
         assertTrue(pcl.hasTokens().hasTokens);
         assertEquals(0, pcl.balance().balance);
 
-        PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
+        PsiCashLib.RefreshStateResult res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
         assertTrue(pcl.isAccount().isAccount);
@@ -48,7 +48,7 @@ public class AccountLogoutTest extends TestBase {
         assertTrue(pcl.hasTokens().hasTokens);
         assertEquals(0, pcl.balance().balance);
 
-        res = pcl.refreshState(null);
+        res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
         assertTrue(pcl.isAccount().isAccount);
@@ -74,7 +74,7 @@ public class AccountLogoutTest extends TestBase {
         PsiCashLib.AccountLoginResult loginResult = pcl.accountLogin(TEST_ACCOUNT_ONE_USERNAME, TEST_ACCOUNT_ONE_PASSWORD);
         assertNull(loginResult.error);
         assertEquals(PsiCashLib.Status.SUCCESS, loginResult.status);
-        PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
+        PsiCashLib.RefreshStateResult res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
 
@@ -96,7 +96,7 @@ public class AccountLogoutTest extends TestBase {
         loginResult = pcl.accountLogin(TEST_ACCOUNT_ONE_USERNAME, TEST_ACCOUNT_ONE_PASSWORD);
         assertNull(loginResult.error);
         assertEquals(PsiCashLib.Status.SUCCESS, loginResult.status);
-        res = pcl.refreshState(null);
+        res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
 

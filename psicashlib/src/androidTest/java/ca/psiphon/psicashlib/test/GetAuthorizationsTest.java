@@ -24,7 +24,7 @@ public class GetAuthorizationsTest extends TestBase {
         assertThat(aar.authorizations, hasSize(0));
 
         // First RefreshState, which creates the tracker
-        PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
+        PsiCashLib.RefreshStateResult res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
         aar = pcl.getAuthorizations(false);
@@ -35,7 +35,7 @@ public class GetAuthorizationsTest extends TestBase {
         assertThat(aar.authorizations, hasSize(0));
 
         // Second RefreshState, which just refreshes
-        res = pcl.refreshState(null);
+        res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
         aar = pcl.getAuthorizations(false);
@@ -52,7 +52,7 @@ public class GetAuthorizationsTest extends TestBase {
         PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper(), false);
         assertNull(err);
 
-        PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
+        PsiCashLib.RefreshStateResult res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
         PsiCashLib.ActivePurchasesResult apr = pcl.activePurchases();
@@ -66,7 +66,7 @@ public class GetAuthorizationsTest extends TestBase {
         err = pcl.testReward(3);
         assertNull(err);
 
-        res = pcl.refreshState(null);
+        res = pcl.refreshState(false, null);
         assertNull(res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
 

@@ -385,6 +385,7 @@ JNICALL
 Java_ca_psiphon_psicashlib_PsiCashLib_NativeRefreshState(
         JNIEnv* env,
         jobject this_obj,
+        jboolean local_only,
         jobjectArray j_purchase_classes)
 {
     vector<string> purchase_classes;
@@ -399,7 +400,7 @@ Java_ca_psiphon_psicashlib_PsiCashLib_NativeRefreshState(
 
     GetPsiCash().SetHTTPRequestFn(GetHTTPReqFn(env, this_obj));
 
-    auto result = GetPsiCash().RefreshState(purchase_classes);
+    auto result = GetPsiCash().RefreshState(local_only, purchase_classes);
     if (!result) {
         return JNI_(WRAP_ERROR(result.error()));
     }
@@ -456,12 +457,11 @@ extern "C" JNIEXPORT jstring
 JNICALL
 Java_ca_psiphon_psicashlib_PsiCashLib_NativeAccountLogout(
         JNIEnv* env,
-        jobject this_obj,
-        jboolean local_only)
+        jobject this_obj)
 {
     GetPsiCash().SetHTTPRequestFn(GetHTTPReqFn(env, this_obj));
 
-    auto result = GetPsiCash().AccountLogout(local_only);
+    auto result = GetPsiCash().AccountLogout();
     if (!result) {
         return JNI_(WRAP_ERROR(result.error()));
     }

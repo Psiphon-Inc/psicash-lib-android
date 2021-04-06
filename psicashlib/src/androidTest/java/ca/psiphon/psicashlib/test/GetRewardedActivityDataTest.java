@@ -18,7 +18,7 @@ public class GetRewardedActivityDataTest extends TestBase {
         assertNotNull(gradr.error);
 
         // First RefreshState, which creates the tracker
-        PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
+        PsiCashLib.RefreshStateResult res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
         gradr = pcl.getRewardedActivityData();
@@ -27,7 +27,7 @@ public class GetRewardedActivityDataTest extends TestBase {
         assertNotEquals(0, gradr.data.length());
 
         // Second RefreshState, which just refreshes
-        res = pcl.refreshState(null);
+        res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
         gradr = pcl.getRewardedActivityData();

@@ -20,7 +20,7 @@ public class GetPurchasesTest extends TestBase {
         assertEquals(0, gpr.purchases.size());
 
         // First RefreshState, which creates the tracker
-        PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
+        PsiCashLib.RefreshStateResult res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
         gpr = pcl.getPurchases();
@@ -28,7 +28,7 @@ public class GetPurchasesTest extends TestBase {
         assertEquals(0, gpr.purchases.size());
 
         // Second RefreshState, which just refreshes
-        res = pcl.refreshState(null);
+        res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
         gpr = pcl.getPurchases();
@@ -42,7 +42,7 @@ public class GetPurchasesTest extends TestBase {
         PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper(), false);
         assertNull(err);
 
-        PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
+        PsiCashLib.RefreshStateResult res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
         PsiCashLib.GetPurchasesResult gpr = pcl.getPurchases();
@@ -52,7 +52,7 @@ public class GetPurchasesTest extends TestBase {
         err = pcl.testReward(3);
         assertNull(err);
 
-        res = pcl.refreshState(null);
+        res = pcl.refreshState(false, null);
         assertNull(res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
 

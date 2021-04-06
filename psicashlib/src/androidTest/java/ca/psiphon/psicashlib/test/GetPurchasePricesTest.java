@@ -22,7 +22,7 @@ public class GetPurchasePricesTest extends TestBase {
 
         // First RefreshState, which creates the tracker,
         // but no purchase classes.
-        PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
+        PsiCashLib.RefreshStateResult res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
         gppr = pcl.getPurchasePrices();
@@ -30,7 +30,7 @@ public class GetPurchasePricesTest extends TestBase {
         assertEquals(0, gppr.purchasePrices.size());
 
         // Second RefreshState, with purchase class
-        res = pcl.refreshState(Arrays.asList("speed-boost"));
+        res = pcl.refreshState(false, Arrays.asList("speed-boost"));
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
         gppr = pcl.getPurchasePrices();

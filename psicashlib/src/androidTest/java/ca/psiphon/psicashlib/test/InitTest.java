@@ -58,7 +58,7 @@ public class InitTest extends TestBase {
             PsiCashLib.Error err = pcl.init(tempDir, new PsiCashLibHelper(), false);
             assertNull(err);
 
-            PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
+            PsiCashLib.RefreshStateResult res = pcl.refreshState(false, null);
             assertNull(res.error);
             assertEquals(PsiCashLib.Status.SUCCESS, res.status);
 
@@ -72,7 +72,7 @@ public class InitTest extends TestBase {
             err = pcl.testReward(1);
             assertNull(conds(err, "message"), err);
             // ...and refresh
-            res = pcl.refreshState(null);
+            res = pcl.refreshState(false, null);
             assertNull(res.error);
             assertEquals(PsiCashLib.Status.SUCCESS, res.status);
             // ...and have a bigger balance

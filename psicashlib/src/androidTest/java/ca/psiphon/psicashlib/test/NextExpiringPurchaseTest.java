@@ -20,7 +20,7 @@ public class NextExpiringPurchaseTest extends TestBase {
         assertNull(nepr.purchase);
 
         // First RefreshState, which creates the tracker
-        PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
+        PsiCashLib.RefreshStateResult res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
         nepr = pcl.nextExpiringPurchase();
@@ -28,7 +28,7 @@ public class NextExpiringPurchaseTest extends TestBase {
         assertNull(nepr.purchase);
 
         // Second RefreshState, which just refreshes
-        res = pcl.refreshState(null);
+        res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
         nepr = pcl.nextExpiringPurchase();
@@ -42,7 +42,7 @@ public class NextExpiringPurchaseTest extends TestBase {
         PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper(), false);
         assertNull(err);
 
-        PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
+        PsiCashLib.RefreshStateResult res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
         PsiCashLib.NextExpiringPurchaseResult nepr = pcl.nextExpiringPurchase();
@@ -52,7 +52,7 @@ public class NextExpiringPurchaseTest extends TestBase {
         err = pcl.testReward(3);
         assertNull(err);
 
-        res = pcl.refreshState(null);
+        res = pcl.refreshState(false, null);
         assertNull(res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
 

@@ -21,7 +21,7 @@ public class BalanceTest extends TestBase {
         assertThat(br.balance, allOf(greaterThanOrEqualTo(0L), lessThanOrEqualTo(MAX_STARTING_BALANCE)));
 
         // First RefreshState, which creates the tracker
-        PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
+        PsiCashLib.RefreshStateResult res = pcl.refreshState(false, null);
         assertNull(res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
         br = pcl.balance();
@@ -29,7 +29,7 @@ public class BalanceTest extends TestBase {
         assertThat(br.balance, allOf(greaterThanOrEqualTo(0L), lessThanOrEqualTo(MAX_STARTING_BALANCE)));
 
         // Second RefreshState, which just refreshes
-        res = pcl.refreshState(null);
+        res = pcl.refreshState(false, null);
         assertNull(res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
         br = pcl.balance();
@@ -48,7 +48,7 @@ public class BalanceTest extends TestBase {
         PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper(), false);
         assertNull(err);
 
-        PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
+        PsiCashLib.RefreshStateResult res = pcl.refreshState(false, null);
         assertNull(res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
 
@@ -62,7 +62,7 @@ public class BalanceTest extends TestBase {
         err = pcl.testReward(1);
         assertNull(conds(err, "message"), err);
         // ...and refresh
-        res = pcl.refreshState(null);
+        res = pcl.refreshState(false, null);
         assertNull(res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
         // ...and have a bigger balance
@@ -78,7 +78,7 @@ public class BalanceTest extends TestBase {
         assertNull(br.error);
         assertEquals(initialBalance, br.balance);
         // ...also try refreshing
-        res = pcl.refreshState(null);
+        res = pcl.refreshState(false, null);
         assertNull(res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
         br = pcl.balance();

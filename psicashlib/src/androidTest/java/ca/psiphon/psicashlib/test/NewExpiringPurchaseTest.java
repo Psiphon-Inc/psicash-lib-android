@@ -19,7 +19,7 @@ public class NewExpiringPurchaseTest extends TestBase {
         assertNull(err);
 
         // Get tokens to use
-        PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
+        PsiCashLib.RefreshStateResult res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
 
@@ -73,7 +73,7 @@ public class NewExpiringPurchaseTest extends TestBase {
         assertNull(err);
 
         // Get tokens to use
-        PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
+        PsiCashLib.RefreshStateResult res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
 
@@ -97,7 +97,7 @@ public class NewExpiringPurchaseTest extends TestBase {
         assertNull(err);
 
         // Get tokens to use
-        PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
+        PsiCashLib.RefreshStateResult res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
 
@@ -115,7 +115,7 @@ public class NewExpiringPurchaseTest extends TestBase {
         assertNull(err);
 
         // Get tokens to use
-        PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
+        PsiCashLib.RefreshStateResult res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
         assertThat(pcl.balance().balance, allOf(greaterThanOrEqualTo(0L), lessThanOrEqualTo(MAX_STARTING_BALANCE)));
@@ -133,7 +133,7 @@ public class NewExpiringPurchaseTest extends TestBase {
         assertNull(err);
 
         // Get tokens to use
-        PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
+        PsiCashLib.RefreshStateResult res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
 
@@ -161,7 +161,7 @@ public class NewExpiringPurchaseTest extends TestBase {
         assertNull(err);
 
         // Get tokens to use
-        PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
+        PsiCashLib.RefreshStateResult res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
 
@@ -195,7 +195,7 @@ public class NewExpiringPurchaseTest extends TestBase {
         assertNull(err);
 
         // Get tokens to use -- and our test purchase info
-        PsiCashLib.RefreshStateResult res = pcl.refreshState(Arrays.asList(TEST_DEBIT_TRANSACTION_CLASS, "speed-boost"));
+        PsiCashLib.RefreshStateResult res = pcl.refreshState(false, Arrays.asList(TEST_DEBIT_TRANSACTION_CLASS, "speed-boost"));
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
         PsiCashLib.GetPurchasePricesResult gppr = pcl.getPurchasePrices();
@@ -220,7 +220,7 @@ public class NewExpiringPurchaseTest extends TestBase {
         assertNull(err);
 
         // Get tokens to use
-        PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
+        PsiCashLib.RefreshStateResult res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
 

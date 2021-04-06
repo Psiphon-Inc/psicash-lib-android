@@ -21,7 +21,7 @@ public class GetDiagnosticInfoTest extends TestBase {
         String firstResult = gdir.jsonString;
 
         // First RefreshState, which creates the tracker
-        PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
+        PsiCashLib.RefreshStateResult res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
         gdir = pcl.getDiagnosticInfo();
@@ -31,7 +31,7 @@ public class GetDiagnosticInfoTest extends TestBase {
         assertNotEquals(firstResult, gdir.jsonString);
 
         // Second RefreshState, which just refreshes
-        res = pcl.refreshState(null);
+        res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
         gdir = pcl.getDiagnosticInfo();

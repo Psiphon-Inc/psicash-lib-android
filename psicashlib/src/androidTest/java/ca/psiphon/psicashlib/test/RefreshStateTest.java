@@ -34,7 +34,7 @@ public class RefreshStateTest extends TestBase {
         assertEquals(0, gppr.purchasePrices.size());
 
         // First call, which gets tokens
-        PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
+        PsiCashLib.RefreshStateResult res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
         assertFalse(res.reconnectRequired);
@@ -49,7 +49,7 @@ public class RefreshStateTest extends TestBase {
         assertThat(br.balance, allOf(greaterThanOrEqualTo(0L), lessThanOrEqualTo(MAX_STARTING_BALANCE)));
 
         // Second call, which just refreshes
-        res = pcl.refreshState(null);
+        res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
         assertFalse(res.reconnectRequired);
@@ -70,7 +70,7 @@ public class RefreshStateTest extends TestBase {
         PsiCashLib.Error err = pcl.init(getTempDir(), new PsiCashLibHelper(), false);
         assertNull(err);
 
-        PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
+        PsiCashLib.RefreshStateResult res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
         assertFalse(res.reconnectRequired);
@@ -88,7 +88,7 @@ public class RefreshStateTest extends TestBase {
         err = pcl.testReward(1);
         assertNull(conds(err, "message"), err);
 
-        res = pcl.refreshState(null);
+        res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
         assertFalse(res.reconnectRequired);
@@ -107,7 +107,7 @@ public class RefreshStateTest extends TestBase {
         PsiCashLib.GetPurchasePricesResult gppr = pcl.getPurchasePrices();
         assertThat(gppr.purchasePrices.size(), is(0));
 
-        PsiCashLib.RefreshStateResult res = pcl.refreshState(Arrays.asList("speed-boost", TEST_DEBIT_TRANSACTION_CLASS));
+        PsiCashLib.RefreshStateResult res = pcl.refreshState(false, Arrays.asList("speed-boost", TEST_DEBIT_TRANSACTION_CLASS));
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
         assertFalse(res.reconnectRequired);
@@ -126,7 +126,7 @@ public class RefreshStateTest extends TestBase {
         PsiCashLib.AccountLoginResult loginResult = pcl.accountLogin(TEST_ACCOUNT_ONE_USERNAME, TEST_ACCOUNT_ONE_PASSWORD);
         assertNull(loginResult.error);
         assertEquals(PsiCashLib.Status.SUCCESS, loginResult.status);
-        PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
+        PsiCashLib.RefreshStateResult res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
 
@@ -150,7 +150,7 @@ public class RefreshStateTest extends TestBase {
         assertEquals(PsiCashLib.Status.SUCCESS, loginResult.status);
 
         // Refresh will sync the purchase, but it doesn't require a reconnect
-        res = pcl.refreshState(null);
+        res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
         assertFalse(res.reconnectRequired);
@@ -175,7 +175,7 @@ public class RefreshStateTest extends TestBase {
         assertEquals(PsiCashLib.Status.SUCCESS, loginResult.status);
 
         // Refresh will sync both purchase, and now we require a reconnect
-        res = pcl.refreshState(null);
+        res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
         assertTrue(res.reconnectRequired);
@@ -192,19 +192,19 @@ public class RefreshStateTest extends TestBase {
         assertNull(err);
 
         pcl.setRequestMutators(Arrays.asList("Response:code=500", "Response:code=500", "Response:code=500"));
-        PsiCashLib.RefreshStateResult res = pcl.refreshState(null);
+        PsiCashLib.RefreshStateResult res = pcl.refreshState(false, null);
         assertNull(res.error);
         assertEquals(PsiCashLib.Status.SERVER_ERROR, res.status);
         assertFalse(res.reconnectRequired);
 
         pcl.setRequestMutator("Timeout:11");
-        res = pcl.refreshState(null);
+        res = pcl.refreshState(false, null);
         assertNotNull(res.error);
         assertThat(res.error.message, either(containsString("timeout")).or(containsString("Timeout")));
         assertFalse(res.reconnectRequired);
 
         pcl.setRequestMutator("Response:code=666");
-        res = pcl.refreshState(null);
+        res = pcl.refreshState(false, null);
         assertNotNull(res.error);
         assertThat(res.error.message, containsString("666"));
         assertFalse(res.reconnectRequired);
@@ -244,7 +244,7 @@ public class RefreshStateTest extends TestBase {
         assertNull(conds(err, "message"), err);
 
         // We'll do an initial RefreshState here to ensure tokens are in place
-        PsiCashLib.RefreshStateResult res = pcl.refreshState(Arrays.asList("speed-boost"));
+        PsiCashLib.RefreshStateResult res = pcl.refreshState(false, Arrays.asList("speed-boost"));
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
 
@@ -277,7 +277,7 @@ public class RefreshStateTest extends TestBase {
         @Override
         public void run() {
             for (int i = 0; i < reps; i++) {
-                PsiCashLib.RefreshStateResult res = pcl.refreshState(Arrays.asList("speed-boost"));
+                PsiCashLib.RefreshStateResult res = pcl.refreshState(false, Arrays.asList("speed-boost"));
                 assertNull(conds(res.error, "message"), res.error);
                 assertEquals(PsiCashLib.Status.SUCCESS, res.status);
             }
