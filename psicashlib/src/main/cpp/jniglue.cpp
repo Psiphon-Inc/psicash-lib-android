@@ -349,6 +349,19 @@ Java_ca_psiphon_psicashlib_PsiCashLib_NativeGetAccountManagementURL(
 
 extern "C" JNIEXPORT jstring
 JNICALL
+Java_ca_psiphon_psicashlib_PsiCashLib_NativeGetAccountUsername(
+        JNIEnv* env,
+        jobject /*this_obj*/)
+{
+    auto result = GetPsiCash().AccountUsername();
+    if (!result) {
+        return JNI_(SuccessResponse(nullptr));
+    }
+    return JNI_(SuccessResponse(*result));
+}
+
+extern "C" JNIEXPORT jstring
+JNICALL
 Java_ca_psiphon_psicashlib_PsiCashLib_NativeGetRewardedActivityData(
         JNIEnv* env,
         jobject /*this_obj*/)

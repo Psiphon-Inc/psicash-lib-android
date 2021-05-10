@@ -813,6 +813,31 @@ public class PsiCashLib {
     }
 
     /**
+     * Retrieves the PsiCash account username for a logged-in account.
+     * @return The username.
+     */
+    @NonNull
+    public AccountUsername getAccountUsername() {
+        String jsonStr = this.NativeGetAccountUsername();
+        JNI.Result.AccountUsername res = new JNI.Result.AccountUsername(jsonStr);
+        return new AccountUsername(res);
+    }
+
+    public static class AccountUsername {
+        public Error error;
+        // Can be null even on success (error==null), if not an account or logged out.
+        public String username;
+
+        AccountUsername(JNI.Result.AccountUsername res) {
+            this.error = res.error;
+            if (this.error != null) {
+                return;
+            }
+            this.username = res.username;
+        }
+    }
+
+    /**
      * Creates a data package that should be included with a webhook for a user
      * action that should be rewarded (such as watching a rewarded video).
      * NOTE: The resulting string will still need to be encoded for use in a URL.
@@ -1335,6 +1360,19 @@ public class PsiCashLib {
                 @Override
                 public void fromJSON(JSONObject json, String key) throws JSONException {
                     this.url = JSON.nonnullString(json, key);
+                }
+            }
+
+            private static class AccountUsername extends Base {
+                String username;
+
+                public AccountUsername(String jsonStr) {
+                    super(jsonStr);
+                }
+
+                @Override
+                public void fromJSON(JSONObject json, String key) throws JSONException {
+                    this.username = JSON.nullableString(json, key);
                 }
             }
 
@@ -1894,6 +1932,14 @@ public class PsiCashLib {
      * }
      */
     private native String NativeGetAccountManagementURL();
+
+    /**
+     * @return {
+     * "error": {...}
+     * "result": account username
+     * }
+     */
+    private native String NativeGetAccountUsername();
 
     /**
      * @return {
