@@ -377,9 +377,10 @@ extern "C" JNIEXPORT jstring
 JNICALL
 Java_ca_psiphon_psicashlib_PsiCashLib_NativeGetDiagnosticInfo(
         JNIEnv* env,
-        jobject /*this_obj*/)
+        jobject /*this_obj*/,
+        jboolean lite)
 {
-    auto json = GetPsiCash().GetDiagnosticInfo();
+    auto json = GetPsiCash().GetDiagnosticInfo(lite);
     return JNI_(SuccessResponse(json.dump(-1, ' ', true)));
 }
 

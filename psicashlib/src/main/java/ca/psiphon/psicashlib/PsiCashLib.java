@@ -22,13 +22,21 @@ package ca.psiphon.psicashlib;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TimeZone;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -872,12 +880,16 @@ public class PsiCashLib {
     }
 
     /**
-     * Returns a JSON object suitable for serializing that can be included in a feedback
-     * diagnostic data package.
+     *
+     * @param lite If true the returned diagnostic JSON size doesn't include purchase
+     *             prices and about 200 bytes in size, otherwise the returned JSON is
+     *             about 1000 bytes.
+     * @return JSON object suitable for serializing that can be included in a feedback
+     *       diagnostic data package.
      */
     @NonNull
-    public GetDiagnosticInfoResult getDiagnosticInfo() {
-        String jsonStr = this.NativeGetDiagnosticInfo();
+    public GetDiagnosticInfoResult getDiagnosticInfo(boolean lite) {
+        String jsonStr = this.NativeGetDiagnosticInfo(lite);
         JNI.Result.GetDiagnosticInfo res = new JNI.Result.GetDiagnosticInfo(jsonStr);
         return new GetDiagnosticInfoResult(res);
     }
@@ -1955,7 +1967,7 @@ public class PsiCashLib {
      * "result": diagnostic JSON as string
      * }
      */
-    private native String NativeGetDiagnosticInfo();
+    private native String NativeGetDiagnosticInfo(boolean lite);
 
     /**
      * @return {
