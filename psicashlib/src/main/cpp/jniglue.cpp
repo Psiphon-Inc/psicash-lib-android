@@ -95,19 +95,17 @@ Java_ca_psiphon_psicashlib_PsiCashLib_NativeResetUser(
 
 extern "C" JNIEXPORT jstring
 JNICALL
-Java_ca_psiphon_psicashlib_PsiCashLib_NativeSetRequestMetadataItem(
+Java_ca_psiphon_psicashlib_PsiCashLib_NativeSetRequestMetadataItems(
         JNIEnv* env,
         jobject /*this_obj*/,
-        jstring j_key,
-        jstring j_value)
+        jobject j_map)
 {
-    auto key = JStringToString(env, j_key);
-    auto value = JStringToString(env, j_value);
-    if (!key || !value) {
-        return JNI_(ERROR_CRITICAL("key and value must be non-null"));
+    auto map = JMapToStdMapStrings(env, j_map);
+    if (!map) {
+        return JNI_(ERROR_CRITICAL("map of values must be non-null"));
     }
 
-    return JNI_(WRAP_ERROR(GetPsiCash().SetRequestMetadataItem(*key, *value)));
+    return JNI_(WRAP_ERROR(GetPsiCash().SetRequestMetadataItems(*map)));
 }
 
 extern "C"

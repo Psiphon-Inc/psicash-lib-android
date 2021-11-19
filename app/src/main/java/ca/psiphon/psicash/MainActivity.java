@@ -1,14 +1,16 @@
 package ca.psiphon.psicash;
 
 import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import ca.psiphon.psicashlib.PsiCashLib;
 
@@ -38,12 +40,17 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected String doInBackground(Void... params) {
-            PsiCashLib.Error error = psiCashLib.setRequestMetadataItem("metadatakey", "metadatavalue");
+            Map<String, String> myMap = new HashMap<String, String>() {{
+                put("a", "b");
+                put("c", "d");
+            }};
+            PsiCashLib.Error error = psiCashLib.setRequestMetadataItems(myMap);
             if (error != null) {
                 Log.e("PsiCashApp", error.message);
             }
 
-            error = psiCashLib.setRequestMetadataItem(null, "blah"); //erroneous
+
+            error = psiCashLib.setRequestMetadataItems(null); //erroneous
             if (error != null) {
                 Log.e("PsiCashApp", error.message);
             }

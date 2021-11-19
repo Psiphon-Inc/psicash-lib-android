@@ -47,6 +47,8 @@ bool CheckJNIException(JNIEnv* env);
 
 nonstd::optional<std::string> JStringToString(JNIEnv* env, jstring j_s);
 
+nonstd::optional<std::map<std::string, std::string>> JMapToStdMapStrings(JNIEnv* env, jobject j_map);
+
 /// Creates a JSON error string appropriate for a JNI response.
 /// If `message` is empty, the result will be a non-error.
 std::string ErrorResponse(bool critical, const std::string& message,

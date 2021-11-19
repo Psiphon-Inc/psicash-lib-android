@@ -1,18 +1,20 @@
 package ca.psiphon.psicashlib.test;
 
-import org.junit.*;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static ca.psiphon.psicashlib.test.SecretTestValues.TEST_ACCOUNT_ONE_PASSWORD;
+import static ca.psiphon.psicashlib.test.SecretTestValues.TEST_ACCOUNT_ONE_USERNAME;
+import static ca.psiphon.psicashlib.test.SecretTestValues.TEST_ACCOUNT_UNICODE_PASSWORD;
+import static ca.psiphon.psicashlib.test.SecretTestValues.TEST_ACCOUNT_UNICODE_USERNAME;
+
+import org.junit.Test;
 
 import java.util.Random;
 
 import ca.psiphon.psicashlib.PsiCashLib;
-
-import static ca.psiphon.psicashlib.test.SecretTestValues.*;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
-import static org.junit.Assert.*;
 
 public class AccountLoginTest extends TestBase {
     @Test

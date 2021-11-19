@@ -1,10 +1,13 @@
 package ca.psiphon.psicashlib.test;
 
-import org.junit.*;
+import static org.junit.Assert.assertNull;
+
+import org.junit.Test;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import ca.psiphon.psicashlib.PsiCashLib;
-
-import static org.junit.Assert.*;
 
 public class SetRequestMetadataItemTest extends TestBase {
     @Test
@@ -13,15 +16,20 @@ public class SetRequestMetadataItemTest extends TestBase {
         PsiCashLib.Error err = pcl.init(getTempDir(), null, false);
         assertNull(err);
 
-        err = pcl.setRequestMetadataItem("mykey", "myval");
+        Map<String, String> items = new HashMap<String, String>() {{
+            put("mykey", "myval");
+        }};
+        err = pcl.setRequestMetadataItems(items);
         assertNull(err);
 
         // Same again
-        err = pcl.setRequestMetadataItem("mykey", "myval");
+        err = pcl.setRequestMetadataItems(items);
         assertNull(err);
 
         // New one
-        err = pcl.setRequestMetadataItem("mykey2", "myval2");
+        items.clear();
+        items.put("mykey2", "myval2");
+        err = pcl.setRequestMetadataItems(items);
         assertNull(err);
     }
 }

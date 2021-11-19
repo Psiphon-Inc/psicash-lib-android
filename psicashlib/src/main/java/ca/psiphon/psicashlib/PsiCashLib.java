@@ -387,11 +387,11 @@ public class PsiCashLib {
      * @return null if no error; Error otherwise.
      */
     @Nullable
-    public Error setRequestMetadataItem(String key, String value) {
+    public Error setRequestMetadataItems(Map<String, String> items) {
         String jsonStr;
         writeLock.lock();
         try {
-            jsonStr = this.NativeSetRequestMetadataItem(key, value);
+            jsonStr = this.NativeSetRequestMetadataItems(items);
         }
         finally {
             writeLock.unlock();
@@ -1811,7 +1811,7 @@ public class PsiCashLib {
     /**
      * @return { "error": {...} }
      */
-    private native String NativeSetRequestMetadataItem(String key, String value);
+    private native String NativeSetRequestMetadataItems(Map<String, String> items);
 
     /**
      * @return { "error": {...} }

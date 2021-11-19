@@ -85,6 +85,43 @@ nonstd::optional<std::string> JStringToString(JNIEnv* env, jstring j_s) {
     return res;
 }
 
+nonstd::optional<std::map<std::string, std::string>> JMapToStdMapStrings(JNIEnv* env, jobject j_map) {
+    if (!j_map) {
+        return nonstd::nullopt;
+    }
+
+    jclass mapClass = env->FindClass("java/util/Map");
+    jclass setClass = env->FindClass("java/util/Set");
+    jclass iteratorClass = env->FindClass("java/util/Iterator");
+    jclass entryClass = env->FindClass("java/util/Map$Entry");
+
+    jmethodID entrySet = env->GetMethodID(mapClass, "entrySet", "()Ljava/util/Set;");
+    jmethodID iterator = env->GetMethodID(setClass, "iterator", "()Ljava/util/Iterator;");
+
+    jmethodID hasNext = env->GetMethodID(iteratorClass, "hasNext", "()Z");
+    jmethodID next = env->GetMethodID(iteratorClass, "next", "()Ljava/lang/Object;");
+    jmethodID getKey = env->GetMethodID(entryClass, "getKey", "()Ljava/lang/Object;");
+    jmethodID getValue = env->GetMethodID(entryClass, "getValue", "()Ljava/lang/Object;");
+
+    jobject set = env->CallObjectMethod(j_map, entrySet);
+    jobject iter = env->CallObjectMethod(set, iterator);
+
+    std::map<std::string, std::string> result;
+
+    while (env->CallBooleanMethod(iter, hasNext)) {
+        jobject entry = env->CallObjectMethod(iter, next);
+        jstring jKey = (jstring)env->CallObjectMethod(entry, getKey);
+        jstring jValue = (jstring)env->CallObjectMethod(entry, getValue);
+        auto keyStr = JStringToString(env, jKey);
+        auto valueStr = JStringToString(env, jValue);
+        if (keyStr && valueStr) {
+            result.insert(std::make_pair(*keyStr, *valueStr));
+        }
+        env->DeleteLocalRef(entry);
+    }
+    return result;
+}
+
 jstring JNIify(JNIEnv* env, const char* str) {
     return str ? env->NewStringUTF(str) : nullptr;
 }

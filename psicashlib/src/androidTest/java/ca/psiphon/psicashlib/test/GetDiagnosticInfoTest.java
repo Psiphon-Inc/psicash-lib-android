@@ -14,7 +14,7 @@ public class GetDiagnosticInfoTest extends TestBase {
         assertNull(err);
 
         // Default value, before the first RefreshState
-        PsiCashLib.GetDiagnosticInfoResult gdir = pcl.getDiagnosticInfo();
+        PsiCashLib.GetDiagnosticInfoResult gdir = pcl.getDiagnosticInfo(false);
         assertNull(gdir.error);
         assertNotNull(gdir.jsonString);
         assertNotEquals(0, gdir.jsonString.length());
@@ -24,7 +24,7 @@ public class GetDiagnosticInfoTest extends TestBase {
         PsiCashLib.RefreshStateResult res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
-        gdir = pcl.getDiagnosticInfo();
+        gdir = pcl.getDiagnosticInfo(false);
         assertNull(gdir.error);
         assertNotNull(gdir.jsonString);
         assertNotEquals(0, gdir.jsonString.length());
@@ -34,7 +34,7 @@ public class GetDiagnosticInfoTest extends TestBase {
         res = pcl.refreshState(false, null);
         assertNull(conds(res.error, "message"), res.error);
         assertEquals(PsiCashLib.Status.SUCCESS, res.status);
-        gdir = pcl.getDiagnosticInfo();
+        gdir = pcl.getDiagnosticInfo(false);
         assertNull(gdir.error);
         assertNotNull(gdir.jsonString);
         assertNotEquals(0, gdir.jsonString.length());

@@ -1,10 +1,16 @@
 package ca.psiphon.psicashlib.test;
 
-import org.junit.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import ca.psiphon.psicashlib.PsiCashLib;
-
-import static org.junit.Assert.*;
 
 public class ModifyLandingPageTest extends TestBase {
     @Test
@@ -43,9 +49,12 @@ public class ModifyLandingPageTest extends TestBase {
         String noMetadataUrl = url;
 
         // Set some metadata
-        err = pcl.setRequestMetadataItem("mykey1", "myval1");
-        assertNull(err);
-        err = pcl.setRequestMetadataItem("mykey2", "myval2");
+        Map<String, String> items = new HashMap<String, String>() {{
+            put("mykey1", "myval1");
+            put("mykey2", "myval2");
+        }};
+
+        err = pcl.setRequestMetadataItems(items);
         assertNull(err);
         mlpr = pcl.modifyLandingPage(url);
         assertNull(mlpr.error);
