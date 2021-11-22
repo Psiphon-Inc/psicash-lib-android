@@ -173,7 +173,7 @@ public class NewExpiringPurchaseTest extends TestBase {
         assertNull(nepr.purchase);
 
         // Force timeout
-        pcl.setRequestMutator("Timeout:11");
+        pcl.setRequestMutators(Arrays.asList("Timeout:11", "Timeout:11", "Timeout:11"));
         nepr = pcl.newExpiringPurchase(TEST_DEBIT_TRANSACTION_CLASS, TEST_ONE_TRILLION_ONE_MICROSECOND_DISTINGUISHER, ONE_TRILLION);
         assertNotNull(nepr.error);
         assertThat(nepr.error.message, either(containsString("timeout")).or(containsString("Timeout")));

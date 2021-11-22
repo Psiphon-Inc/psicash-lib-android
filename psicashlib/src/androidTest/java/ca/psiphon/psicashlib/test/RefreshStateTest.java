@@ -197,7 +197,7 @@ public class RefreshStateTest extends TestBase {
         assertEquals(PsiCashLib.Status.SERVER_ERROR, res.status);
         assertFalse(res.reconnectRequired);
 
-        pcl.setRequestMutator("Timeout:11");
+        pcl.setRequestMutators(Arrays.asList("Timeout:11", "Timeout:11", "Timeout:11"));
         res = pcl.refreshState(false, null);
         assertNotNull(res.error);
         assertThat(res.error.message, either(containsString("timeout")).or(containsString("Timeout")));
