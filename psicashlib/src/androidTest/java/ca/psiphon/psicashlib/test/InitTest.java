@@ -1,12 +1,11 @@
 package ca.psiphon.psicashlib.test;
 
-import android.support.test.filters.FlakyTest;
+import androidx.test.filters.FlakyTest;
 
 import org.junit.*;
 
 import ca.psiphon.psicashlib.PsiCashLib;
 
-import static ca.psiphon.psicashlib.test.SecretTestValues.*;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 

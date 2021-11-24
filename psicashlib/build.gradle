@@ -1,15 +1,15 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 23
+    compileSdkVersion 30
 
     defaultConfig {
-        minSdkVersion 9
-        targetSdkVersion 23
+        minSdkVersion 14
+        targetSdkVersion 30
         versionCode 1
         versionName "1.0"
 
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
         externalNativeBuild {
             cmake {
@@ -69,9 +69,9 @@ afterEvaluate { project ->
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'com.android.support:appcompat-v7:23.4.0'
+    implementation 'androidx.appcompat:appcompat:1.0.0'
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support:support-annotations:23.4.0'
-    androidTestImplementation 'com.android.support.test:runner:0.5'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:2.2.1'
+    androidTestImplementation 'androidx.annotation:annotation:1.0.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
 }

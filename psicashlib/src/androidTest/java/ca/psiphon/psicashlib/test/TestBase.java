@@ -1,14 +1,11 @@
 package ca.psiphon.psicashlib.test;
 
-import android.support.test.InstrumentationRegistry;
+import androidx.test.platform.app.InstrumentationRegistry;
 import android.util.Log;
 
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
-import org.hamcrest.Factory;
-import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
-import org.hamcrest.TypeSafeMatcher;
 import org.junit.*;
 
 import java.io.BufferedReader;
@@ -34,7 +31,7 @@ public class TestBase {
 
     @BeforeClass
     public static void makeTestDir() {
-        String cacheDirPath = InstrumentationRegistry.getTargetContext().getCacheDir().toString();
+        String cacheDirPath = InstrumentationRegistry.getInstrumentation().getTargetContext().getCacheDir().toString();
         File tempDir = new File(cacheDirPath + File.separator + "test");
         // For some reason, calling mkdirs here fails. But succeeds in getTempDir. So don't bother here.
         TestBase.testSubDir = tempDir;

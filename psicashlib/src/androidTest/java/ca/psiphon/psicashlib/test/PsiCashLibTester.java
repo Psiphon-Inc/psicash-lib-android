@@ -1,11 +1,10 @@
 package ca.psiphon.psicashlib.test;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import java.util.List;
 
 import ca.psiphon.psicashlib.PsiCashLib;
-import static ca.psiphon.psicashlib.test.SecretTestValues.*;
 
 public class PsiCashLibTester extends PsiCashLib {
     @Override
