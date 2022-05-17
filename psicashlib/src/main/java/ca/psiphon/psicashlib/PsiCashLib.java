@@ -20,15 +20,23 @@
 package ca.psiphon.psicashlib;
 
 import android.net.Uri;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TimeZone;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -38,6 +46,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class PsiCashLib {
     private final Lock writeLock = new ReentrantLock();
+    private boolean initialized = false;
 
     /**
      * The library user must implement this interface. It provides HTTP request
@@ -58,6 +67,7 @@ public class PsiCashLib {
             public String method;
             public Uri uri;
             public Map<String, String> headers;
+            public String body;
         }
 
         /**
@@ -72,7 +82,7 @@ public class PsiCashLib {
             // On critical error (e.g., programming fault or out-of-memory): CRITICAL_ERROR
             public int code = CRITICAL_ERROR;
             public String body;
-            public String date;
+            public Map<String, List<String>> headers;
             public String error;
 
             String toJSON() {
@@ -80,8 +90,23 @@ public class PsiCashLib {
                 try {
                     json.put("code", this.code);
                     json.put("body", this.body);
-                    json.put("date", this.date);
                     json.put("error", this.error);
+
+                    if (this.headers != null) {
+                        JSONObject headers = new JSONObject();
+                        for (Map.Entry<String, List<String>> entry : this.headers.entrySet()) {
+                            if (entry.getKey() == null) {
+                                // The Java headers object puts the first HTTP line under a null key
+                                continue;
+                            }
+                            headers.put(entry.getKey(), new JSONArray(entry.getValue()));
+                        }
+                        json.put("headers", headers);
+                    }
+                    else {
+                        json.put("headers", null);
+                    }
+
                     return json.toString();
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -114,7 +139,9 @@ public class PsiCashLib {
         TRANSACTION_AMOUNT_MISMATCH(3),
         TRANSACTION_TYPE_NOT_FOUND(4),
         INVALID_TOKENS(5),
-        SERVER_ERROR(6);
+        INVALID_CREDENTIALS(6),
+        BAD_REQUEST(7),
+        SERVER_ERROR(8);
 
         private final int code;
 
@@ -299,7 +326,18 @@ public class PsiCashLib {
         finally {
             writeLock.unlock();
         }
+        if (res == null) {
+            this.initialized = true;
+        }
         return res;
+    }
+
+    /**
+     * Indicates if the library has been successfully initialized.
+     * @return true if initialized, false otherwise.
+     */
+    public boolean isInitialized() {
+        return initialized;
     }
 
     /**
@@ -326,16 +364,52 @@ public class PsiCashLib {
     }
 
     /**
+     * Resets the current user data. See psicash.hpp for full description.
+     * @return error
+     */
+    @Nullable
+    public Error resetUser() {
+        String jsonStr;
+        writeLock.lock();
+        try {
+            jsonStr = this.NativeResetUser();
+        }
+        finally {
+            writeLock.unlock();
+        }
+        JNI.Result.ErrorOnly res = new JNI.Result.ErrorOnly(jsonStr);
+        return res.error;
+    }
+
+    /**
      * Set values that will be included in the request metadata. This includes
      * client_version, client_region, sponsor_id, and propagation_channel_id.
      * @return null if no error; Error otherwise.
      */
     @Nullable
-    public Error setRequestMetadataItem(String key, String value) {
+    public Error setRequestMetadataItems(Map<String, String> items) {
         String jsonStr;
         writeLock.lock();
         try {
-            jsonStr = this.NativeSetRequestMetadataItem(key, value);
+            jsonStr = this.NativeSetRequestMetadataItems(items);
+        }
+        finally {
+            writeLock.unlock();
+        }
+        JNI.Result.ErrorOnly res = new JNI.Result.ErrorOnly(jsonStr);
+        return res.error;
+    }
+
+    /**
+     * Set locale string that will be included with user site URLs
+     * @return null if no error; Error otherwise.
+     */
+    @Nullable
+    public Error setLocale(@NonNull String locale) {
+        String jsonStr;
+        writeLock.lock();
+        try {
+            jsonStr = this.NativeSetLocale(locale);
         }
         finally {
             writeLock.unlock();
@@ -345,34 +419,34 @@ public class PsiCashLib {
     }
 
     /*
-     * ValidTokenTypes
+     * HasTokens
      */
 
     /**
-     * Returns the stored valid token types. Like ["spender", "indicator"].
-     * @return List will be empty if no tokens are available.
+     * Returns true if there are sufficient tokens for this library to function on behalf
+     * of a user. False otherwise.
+     * If this is false and `IsAccount()` is true, then the user is a logged-out account
+     * and needs to log in to continue. If this is false and `IsAccount()` is false,
+     * `RefreshState()` needs to be called to get new Tracker tokens.
      */
     @NonNull
-    public ValidTokenTypesResult validTokenTypes() {
-        String jsonStr = this.NativeValidTokenTypes();
-        JNI.Result.ValidTokenTypes res = new JNI.Result.ValidTokenTypes(jsonStr);
-        return new ValidTokenTypesResult(res);
+    public HasTokensResult hasTokens() {
+        String jsonStr = this.NativeHasTokens();
+        JNI.Result.HasTokens res = new JNI.Result.HasTokens(jsonStr);
+        return new HasTokensResult(res);
     }
 
-    public static class ValidTokenTypesResult {
+    public static class HasTokensResult {
         // Expected to be null; indicates glue problem.
         public Error error;
+        public boolean hasTokens;
 
-        // Null iff error (which is not expected).
-        // Will be empty if no tokens are available.
-        public List<TokenType> validTokenTypes;
-
-        ValidTokenTypesResult(JNI.Result.ValidTokenTypes res) {
+        HasTokensResult(JNI.Result.HasTokens res) {
             this.error = res.error;
             if (this.error != null) {
                 return;
             }
-            this.validTokenTypes = res.validTokenTypes;
+            this.hasTokens = res.hasTokens;
         }
     }
 
@@ -720,6 +794,58 @@ public class PsiCashLib {
     }
 
     /**
+     * Retrieves the PsiCash account signup page URL.
+     * @return The URL of the signup page.
+     */
+    @NonNull
+    public String getAccountSignupURL() {
+        return this.NativeGetAccountSignupURL();
+    }
+
+    /**
+     * Retrieves the PsiCash account forgot credentials page URL.
+     * @return The URL of the forgot credentials page.
+     */
+    @NonNull
+    public String getAccountForgotURL() {
+        return this.NativeGetAccountForgotURL();
+    }
+
+    /**
+     * Retrieves the PsiCash account management page URL.
+     * @return The URL of the management page.
+     */
+    @NonNull
+    public String getAccountManagementURL() {
+        return this.NativeGetAccountManagementURL();
+    }
+
+    /**
+     * Retrieves the PsiCash account username for a logged-in account.
+     * @return The username.
+     */
+    @NonNull
+    public AccountUsername getAccountUsername() {
+        String jsonStr = this.NativeGetAccountUsername();
+        JNI.Result.AccountUsername res = new JNI.Result.AccountUsername(jsonStr);
+        return new AccountUsername(res);
+    }
+
+    public static class AccountUsername {
+        public Error error;
+        // Can be null even on success (error==null), if not an account or logged out.
+        public String username;
+
+        AccountUsername(JNI.Result.AccountUsername res) {
+            this.error = res.error;
+            if (this.error != null) {
+                return;
+            }
+            this.username = res.username;
+        }
+    }
+
+    /**
      * Creates a data package that should be included with a webhook for a user
      * action that should be rewarded (such as watching a rewarded video).
      * NOTE: The resulting string will still need to be encoded for use in a URL.
@@ -754,12 +880,16 @@ public class PsiCashLib {
     }
 
     /**
-     * Returns a JSON object suitable for serializing that can be included in a feedback
-     * diagnostic data package.
+     *
+     * @param lite If true the returned diagnostic JSON size doesn't include purchase
+     *             prices and about 200 bytes in size, otherwise the returned JSON is
+     *             about 1000 bytes.
+     * @return JSON object suitable for serializing that can be included in a feedback
+     *       diagnostic data package.
      */
     @NonNull
-    public GetDiagnosticInfoResult getDiagnosticInfo() {
-        String jsonStr = this.NativeGetDiagnosticInfo();
+    public GetDiagnosticInfoResult getDiagnosticInfo(boolean lite) {
+        String jsonStr = this.NativeGetDiagnosticInfo(lite);
         JNI.Result.GetDiagnosticInfo res = new JNI.Result.GetDiagnosticInfo(jsonStr);
         return new GetDiagnosticInfoResult(res);
     }
@@ -788,14 +918,14 @@ public class PsiCashLib {
      * for the reason indicated by the status.
      */
     @NonNull
-    public RefreshStateResult refreshState(List<String> purchaseClasses) {
+    public RefreshStateResult refreshState(boolean localOnly, List<String> purchaseClasses) {
         if (purchaseClasses == null) {
             purchaseClasses = new ArrayList<>();
         }
         String jsonStr;
         writeLock.lock();
         try {
-            jsonStr = this.NativeRefreshState(purchaseClasses.toArray(new String[0]));
+            jsonStr = this.NativeRefreshState(localOnly, purchaseClasses.toArray(new String[0]));
         }
         finally {
             writeLock.unlock();
@@ -809,9 +939,12 @@ public class PsiCashLib {
         public Error error;
         // Null iff error.
         public Status status;
+        // True when a tunnel reconnect is required as a result of this logout.
+        public boolean reconnectRequired;
 
         RefreshStateResult(JNI.Result.RefreshState res) {
             this.error = res.error;
+            this.reconnectRequired = res.reconnectRequired;
             if (this.error != null) {
                 return;
             }
@@ -863,6 +996,72 @@ public class PsiCashLib {
         }
     }
 
+    /**
+     * Logs the user into an account.
+     * See psicash.hpp for full description.
+     */
+    @NonNull
+    public AccountLogoutResult accountLogout() {
+        String jsonStr;
+        writeLock.lock();
+        try {
+            jsonStr = this.NativeAccountLogout();
+        }
+        finally {
+            writeLock.unlock();
+        }
+        JNI.Result.AccountLogout res = new JNI.Result.AccountLogout(jsonStr);
+        return new AccountLogoutResult(res);
+    }
+
+    public static class AccountLogoutResult {
+        // Indicates catastrophic inability to make request.
+        public Error error;
+        // True when a tunnel reconnect is required as a result of this logout.
+        public boolean reconnectRequired;
+
+        AccountLogoutResult(JNI.Result.AccountLogout res) {
+            this.error = res.error;
+            this.reconnectRequired = res.reconnectRequired;
+        }
+    }
+
+    /**
+     * Logs the user into an account.
+     * See psicash.hpp for full description.
+     */
+    @NonNull
+    public AccountLoginResult accountLogin(String username, String password) {
+        String jsonStr;
+        writeLock.lock();
+        try {
+            jsonStr = this.NativeAccountLogin(username, password);
+        }
+        finally {
+            writeLock.unlock();
+        }
+        JNI.Result.AccountLogin res = new JNI.Result.AccountLogin(jsonStr);
+        return new AccountLoginResult(res);
+    }
+
+    public static class AccountLoginResult {
+        // Indicates catastrophic inability to make request.
+        public Error error;
+        // Null iff error.
+        public Status status;
+        // Will be non-null iff tracker tokens were present to attempt to merge.
+        public Boolean lastTrackerMerge;
+
+        AccountLoginResult(JNI.Result.AccountLogin res) {
+            this.error = res.error;
+            if (this.error != null) {
+                return;
+            }
+            this.status = res.status;
+            this.lastTrackerMerge = res.lastTrackerMerge;
+        }
+    }
+
     //
     // END API ////////////////////////////////////////////////////////////////
     ///
@@ -909,6 +1108,8 @@ public class PsiCashLib {
                         uriBuilder.appendQueryParameter(key, value);
                     }
                 }
+
+                reqParams.body = JSON.nullableString(json, "body");
             } catch (JSONException e) {
                 result.error = "Parsing request object failed: " + e.toString();
                 return result.toJSON();
@@ -1005,25 +1206,16 @@ public class PsiCashLib {
                 }
             }
 
-            private static class ValidTokenTypes extends Base {
-                List<TokenType> validTokenTypes;
+            private static class HasTokens extends Base {
+                boolean hasTokens;
 
-                public ValidTokenTypes(String jsonStr) {
+                public HasTokens(String jsonStr) {
                     super(jsonStr);
                 }
 
                 @Override
-                public void fromJSON(JSONObject json, String key) {
-                    // Allow for an null list (probably won't happen, but could represent no valid token types).
-                    // We can't pass TokenType.class to JSON.nullableList as it's an enum
-                    // and we'll get null back.
-                    List<String> vttStrings = JSON.nullableList(String.class, json, key);
-                    if (vttStrings != null) {
-                        this.validTokenTypes = new ArrayList<>(vttStrings.size());
-                        for (int i = 0; i < vttStrings.size(); i++) {
-                            this.validTokenTypes.add(i, TokenType.fromName(vttStrings.get(i)));
-                        }
-                    }
+                public void fromJSON(JSONObject json, String key) throws JSONException {
+                    this.hasTokens = JSON.nonnullBoolean(json, key);
                 }
             }
 
@@ -1183,6 +1375,19 @@ public class PsiCashLib {
                 }
             }
 
+            private static class AccountUsername extends Base {
+                String username;
+
+                public AccountUsername(String jsonStr) {
+                    super(jsonStr);
+                }
+
+                @Override
+                public void fromJSON(JSONObject json, String key) throws JSONException {
+                    this.username = JSON.nullableString(json, key);
+                }
+            }
+
             private static class GetRewardedActivityData extends Base {
                 String data;
 
@@ -1212,6 +1417,7 @@ public class PsiCashLib {
 
             private static class RefreshState extends Base {
                 public Status status;
+                public boolean reconnectRequired;
 
                 public RefreshState(String jsonStr) {
                     super(jsonStr);
@@ -1219,7 +1425,9 @@ public class PsiCashLib {
 
                 @Override
                 public void fromJSON(JSONObject json, String key) throws JSONException {
-                    this.status = Status.fromCode(JSON.nonnullInteger(json, key));
+                    json = JSON.nonnullObject(json, key);
+                    this.status = Status.fromCode(JSON.nonnullInteger(json, kStatusKey));
+                    this.reconnectRequired = JSON.nonnullBoolean(json, "reconnect_required");
                 }
             }
 
@@ -1244,6 +1452,37 @@ public class PsiCashLib {
                         // Not a sane state.
                         throw new JSONException("NewExpiringPurchase.fromJSON got SUCCESS but no purchase object");
                     }
+                }
+            }
+
+            private static class AccountLogout extends Base {
+                public boolean reconnectRequired;
+
+                public AccountLogout(String jsonStr) {
+                    super(jsonStr);
+                }
+
+                @Override
+                public void fromJSON(JSONObject json, String key) throws JSONException {
+                    json = JSON.nonnullObject(json, key);
+                    this.reconnectRequired = JSON.nonnullBoolean(json, "reconnect_required");
+                }
+            }
+
+            private static class AccountLogin extends Base {
+                public Status status;
+                public Boolean lastTrackerMerge;
+
+                public AccountLogin(String jsonStr) {
+                    super(jsonStr);
+                }
+
+                @Override
+                public void fromJSON(JSONObject json, String key) throws JSONException {
+                    json = JSON.nonnullObject(json, key);
+
+                    this.status = Status.fromCode(JSON.nonnullInteger(json, kStatusKey));
+                    this.lastTrackerMerge = JSON.nullableBoolean(json, "last_tracker_merge");
                 }
             }
         }
@@ -1567,7 +1806,25 @@ public class PsiCashLib {
     /**
      * @return { "error": {...} }
      */
-    private native String NativeSetRequestMetadataItem(String key, String value);
+    private native String NativeResetUser();
+
+    /**
+     * @return { "error": {...} }
+     */
+    private native String NativeSetRequestMetadataItems(Map<String, String> items);
+
+    /**
+     * @return { "error": {...} }
+     */
+    private native String NativeSetLocale(String locale);
+
+    /**
+     * @return {
+     * "error": {...},
+     * "result": boolean
+     * }
+     */
+    private native String NativeHasTokens();
 
     /**
      * @return {
@@ -1576,14 +1833,6 @@ public class PsiCashLib {
      * }
      */
     private native String NativeIsAccount();
-
-    /**
-     * @return {
-     * "error": {...},
-     * "result": ["earner", "indicator", ...]
-     * }
-     */
-    private native String NativeValidTokenTypes();
 
     /**
      * @return {
@@ -1675,6 +1924,38 @@ public class PsiCashLib {
     /**
      * @return {
      * "error": {...}
+     * "result": url string
+     * }
+     */
+    private native String NativeGetAccountSignupURL();
+
+    /**
+     * @return {
+     * "error": {...}
+     * "result": url string
+     * }
+     */
+    private native String NativeGetAccountForgotURL();
+
+    /**
+     * @return {
+     * "error": {...}
+     * "result": url string
+     * }
+     */
+    private native String NativeGetAccountManagementURL();
+
+    /**
+     * @return {
+     * "error": {...}
+     * "result": account username
+     * }
+     */
+    private native String NativeGetAccountUsername();
+
+    /**
+     * @return {
+     * "error": {...}
      * "result": string encoded data
      * }
      */
@@ -1686,26 +1967,40 @@ public class PsiCashLib {
      * "result": diagnostic JSON as string
      * }
      */
-    private native String NativeGetDiagnosticInfo();
+    private native String NativeGetDiagnosticInfo(boolean lite);
 
     /**
      * @return {
      * "error": {...},
      * "result": Status
+     * "reconnect_required": boolean
      * }
      */
-    private native String NativeRefreshState(String[] purchaseClasses);
+    private native String NativeRefreshState(boolean localOnly, String[] purchaseClasses);
 
     /**
      * @return {
      * "error": {...},
      * "result": {
-     * "status": Status,
-     * "purchase": Purchase
+     *   "status": Status,
+     *   "purchase": Purchase
      * }
      * }
      */
     private native String NativeNewExpiringPurchase(String transactionClass, String distinguisher, long expectedPrice);
+
+    /**
+     * @return {
+     * "error": {...},
+     * "reconnect_required": boolean
+     * }
+     */
+    private native String NativeAccountLogout();
+
+    /**
+     * @return { "error": {...} }
+     */
+    private native String NativeAccountLogin(String username, String password);
 
     /*
      * TEST ONLY Native functions

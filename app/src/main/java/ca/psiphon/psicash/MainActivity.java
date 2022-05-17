@@ -1,14 +1,16 @@
 package ca.psiphon.psicash;
 
 import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import ca.psiphon.psicashlib.PsiCashLib;
 
@@ -38,21 +40,30 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected String doInBackground(Void... params) {
-            PsiCashLib.Error error = psiCashLib.setRequestMetadataItem("metadatakey", "metadatavalue");
+            Map<String, String> myMap = new HashMap<String, String>() {{
+                put("a", "b");
+                put("c", "d");
+            }};
+            PsiCashLib.Error error = psiCashLib.setRequestMetadataItems(myMap);
             if (error != null) {
                 Log.e("PsiCashApp", error.message);
             }
 
-            error = psiCashLib.setRequestMetadataItem(null, "blah"); //erroneous
+
+            error = psiCashLib.setRequestMetadataItems(null); //erroneous
             if (error != null) {
                 Log.e("PsiCashApp", error.message);
             }
+
+            String accountSignupURL = psiCashLib.getAccountSignupURL();
+            String accountManagementURL = psiCashLib.getAccountManagementURL();
+            String accountForgotURL = psiCashLib.getAccountForgotURL();
 
             List<String> purchaseClasses = new ArrayList<>(Arrays.asList("speed-boost"));
-            PsiCashLib.RefreshStateResult rsr = psiCashLib.refreshState(purchaseClasses);
+            PsiCashLib.RefreshStateResult rsr = psiCashLib.refreshState(false, purchaseClasses);
 
             PsiCashLib.IsAccountResult isAccount = psiCashLib.isAccount();
-            PsiCashLib.ValidTokenTypesResult vtt = psiCashLib.validTokenTypes();
+            PsiCashLib.HasTokensResult htr = psiCashLib.hasTokens();
             PsiCashLib.BalanceResult b = psiCashLib.balance();
             PsiCashLib.GetPurchasePricesResult pp = psiCashLib.getPurchasePrices();
             PsiCashLib.GetPurchasesResult gpr = psiCashLib.getPurchases();
@@ -65,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
 
             PsiCashLib.ModifyLandingPageResult mlpr = psiCashLib.modifyLandingPage("https://example.com/foo");
             PsiCashLib.GetRewardedActivityDataResult gradr = psiCashLib.getRewardedActivityData();
-            PsiCashLib.GetDiagnosticInfoResult gdir = psiCashLib.getDiagnosticInfo();
+            PsiCashLib.GetDiagnosticInfoResult gdir = psiCashLib.getDiagnosticInfo(false);
 
             String encodedAuth = "eyJBdXRob3JpemF0aW9uIjp7IklEIjoiMFYzRXhUdmlBdFNxTGZOd2FpQXlHNHpaRUJJOGpIYnp5bFdNeU5FZ1JEZz0iLCJBY2Nlc3NUeXBlIjoic3BlZWQtYm9vc3QtdGVzdCIsIkV4cGlyZXMiOiIyMDE5LTAxLTE0VDE3OjIyOjIzLjE2ODc2NDEyOVoifSwiU2lnbmluZ0tleUlEIjoiUUNZTzV2clIvZGhjRDZ6M2FMQlVNeWRuZlJyZFNRL1RWYW1IUFhYeTd0TT0iLCJTaWduYXR1cmUiOiJQL2NrenloVUJoSk5RQ24zMnluM1VTdGpLencxU04xNW9MclVhTU9XaW9scXBOTTBzNVFSNURHVEVDT1FzQk13ODdQdTc1TGE1OGtJTHRIcW1BVzhDQT09In0=";
             PsiCashLib.DecodeAuthorizationResult authRes = PsiCashLib.decodeAuthorization(encodedAuth);

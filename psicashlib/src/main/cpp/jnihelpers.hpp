@@ -47,6 +47,8 @@ bool CheckJNIException(JNIEnv* env);
 
 nonstd::optional<std::string> JStringToString(JNIEnv* env, jstring j_s);
 
+nonstd::optional<std::map<std::string, std::string>> JMapToStdMapStrings(JNIEnv* env, jobject j_map);
+
 /// Creates a JSON error string appropriate for a JNI response.
 /// If `message` is empty, the result will be a non-error.
 std::string ErrorResponse(bool critical, const std::string& message,
@@ -64,8 +66,10 @@ std::string ErrorResponse(const psicash::error::Error& error, const std::string&
 #define ERROR_CRITICAL(msg)     (ErrorResponse(true, msg, __FILE__, __PRETTY_FUNCTION__, __LINE__).c_str())
 #define WRAP_ERROR1(err, msg)   (ErrorResponse(err, msg, __FILE__, __PRETTY_FUNCTION__, __LINE__).c_str())
 #define WRAP_ERROR(err)         WRAP_ERROR1(err, "")
-#define JNI_(str)               (str ? env->NewStringUTF(str) : nullptr)
-#define JNI_s(str)              (!str.empty() ? env->NewStringUTF(str.c_str()) : nullptr)
+
+jstring JNIify(JNIEnv* env, const char* str);
+jstring JNIify(JNIEnv* env, const std::string& str);
+#define JNI_(str)               (JNIify(env, str))
 
 /// Create a JNI success response.
 template<typename T>

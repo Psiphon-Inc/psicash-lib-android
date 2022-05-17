@@ -38,7 +38,8 @@ using namespace psicash;
 
 extern "C" JNIEXPORT jboolean
 JNICALL
-Java_ca_psiphon_psicashlib_PsiCashLib_NativeStaticInit(JNIEnv* env, jclass type) {
+Java_ca_psiphon_psicashlib_PsiCashLib_NativeStaticInit(JNIEnv* env, jclass type)
+{
     g_jGlueClass = reinterpret_cast<jclass>(env->NewGlobalRef(type));
 
     g_makeHTTPRequestMID = env->GetMethodID(g_jGlueClass, HTTP_REQUEST_FN_NAME, HTTP_REQUEST_FN_SIG);
@@ -58,7 +59,8 @@ Java_ca_psiphon_psicashlib_PsiCashLib_NativeObjectInit(
         jobject /*this_obj*/,
         jstring j_file_store_root,
         jboolean force_reset,
-        jboolean test) {
+        jboolean test)
+{
     g_testing = test;
 
     if (!j_file_store_root) {
@@ -70,89 +72,113 @@ Java_ca_psiphon_psicashlib_PsiCashLib_NativeObjectInit(
         return JNI_(ERROR_CRITICAL("file_store_root is invalid"));
     }
 
-    if (force_reset) {
-        auto err = GetPsiCash().Reset(file_store_root->c_str(), test);
-        if (err) {
-            return JNI_(WRAP_ERROR1(err, "PsiCash.Reset failed"));
-        }
-    }
-
     // We can't set the HTTP requester function yet, as we can't cache `this_obj`.
-    auto err = GetPsiCash().Init(kPsiCashUserAgent, file_store_root->c_str(), nullptr, test);
+    auto err = GetPsiCash().Init(kPsiCashUserAgent, file_store_root->c_str(), nullptr, force_reset, test);
     if (err) {
         return JNI_(WRAP_ERROR1(err, "PsiCash.Init failed"));
     }
 
-    return JNI_s(SuccessResponse());
+    return JNI_(SuccessResponse());
+}
+
+// NOTE: We are _not_ exposing PsiCash::Initialized, as methods won't work if the lib
+// isn't initialized.
+
+extern "C" JNIEXPORT jstring
+JNICALL
+Java_ca_psiphon_psicashlib_PsiCashLib_NativeResetUser(
+        JNIEnv* env,
+        jobject /*this_obj*/)
+{
+    return JNI_(WRAP_ERROR(GetPsiCash().ResetUser()));
 }
 
 extern "C" JNIEXPORT jstring
 JNICALL
-Java_ca_psiphon_psicashlib_PsiCashLib_NativeSetRequestMetadataItem(
+Java_ca_psiphon_psicashlib_PsiCashLib_NativeSetRequestMetadataItems(
         JNIEnv* env,
         jobject /*this_obj*/,
-        jstring j_key,
-        jstring j_value) {
-    auto key = JStringToString(env, j_key);
-    auto value = JStringToString(env, j_value);
-    if (!key || !value) {
-        return JNI_(ERROR_CRITICAL("key and value must be non-null"));
+        jobject j_map)
+{
+    auto map = JMapToStdMapStrings(env, j_map);
+    if (!map) {
+        return JNI_(ERROR_CRITICAL("map of values must be non-null"));
     }
 
-    return JNI_(WRAP_ERROR(GetPsiCash().SetRequestMetadataItem(*key, *value)));
+    return JNI_(WRAP_ERROR(GetPsiCash().SetRequestMetadataItems(*map)));
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_ca_psiphon_psicashlib_PsiCashLib_NativeSetLocale(
+        JNIEnv* env,
+        jobject /*this_obj*/,
+        jstring j_value)
+{
+    auto value = JStringToString(env, j_value);
+    if (!value) {
+        return JNI_(ERROR_CRITICAL("value must be non-null"));
+    }
+
+    return JNI_(WRAP_ERROR(GetPsiCash().SetLocale(*value)));
 }
 
 extern "C" JNIEXPORT jstring
 JNICALL
-Java_ca_psiphon_psicashlib_PsiCashLib_NativeValidTokenTypes(
+Java_ca_psiphon_psicashlib_PsiCashLib_NativeHasTokens(
         JNIEnv* env,
-        jobject /*this_obj*/) {
-    auto vtt = GetPsiCash().ValidTokenTypes();
-    return JNI_s(SuccessResponse(vtt));
+        jobject /*this_obj*/)
+{
+    return JNI_(SuccessResponse(GetPsiCash().HasTokens()));
 }
 
 extern "C" JNIEXPORT jstring
 JNICALL
 Java_ca_psiphon_psicashlib_PsiCashLib_NativeIsAccount(
         JNIEnv* env,
-        jobject /*this_obj*/) {
-    return JNI_s(SuccessResponse(GetPsiCash().IsAccount()));
+        jobject /*this_obj*/)
+{
+    return JNI_(SuccessResponse(GetPsiCash().IsAccount()));
 }
 
 extern "C" JNIEXPORT jstring
 JNICALL
 Java_ca_psiphon_psicashlib_PsiCashLib_NativeBalance(
         JNIEnv* env,
-        jobject /*this_obj*/) {
+        jobject /*this_obj*/)
+{
     auto b = GetPsiCash().Balance();
-    return JNI_s(SuccessResponse(b));
+    return JNI_(SuccessResponse(b));
 }
 
 extern "C" JNIEXPORT jstring
 JNICALL
 Java_ca_psiphon_psicashlib_PsiCashLib_NativeGetPurchasePrices(
         JNIEnv* env,
-        jobject /*this_obj*/) {
+        jobject /*this_obj*/)
+{
     auto pp = GetPsiCash().GetPurchasePrices();
-    return JNI_s(SuccessResponse(pp));
+    return JNI_(SuccessResponse(pp));
 }
 
 extern "C" JNIEXPORT jstring
 JNICALL
 Java_ca_psiphon_psicashlib_PsiCashLib_NativeGetPurchases(
         JNIEnv* env,
-        jobject /*this_obj*/) {
+        jobject /*this_obj*/)
+{
     auto p = GetPsiCash().GetPurchases();
-    return JNI_s(SuccessResponse(p));
+    return JNI_(SuccessResponse(p));
 }
 
 extern "C" JNIEXPORT jstring
 JNICALL
 Java_ca_psiphon_psicashlib_PsiCashLib_NativeActivePurchases(
         JNIEnv* env,
-        jobject /*this_obj*/) {
+        jobject /*this_obj*/)
+{
     auto p = GetPsiCash().ActivePurchases();
-    return JNI_s(SuccessResponse(p));
+    return JNI_(SuccessResponse(p));
 }
 
 extern "C" JNIEXPORT jstring
@@ -160,9 +186,10 @@ JNICALL
 Java_ca_psiphon_psicashlib_PsiCashLib_NativeGetAuthorizations(
         JNIEnv* env,
         jobject /*this_obj*/,
-        jboolean active_only) {
+        jboolean active_only)
+{
     auto a = GetPsiCash().GetAuthorizations(active_only);
-    return JNI_s(SuccessResponse(a));
+    return JNI_(SuccessResponse(a));
 }
 
 extern "C" JNIEXPORT jstring
@@ -170,14 +197,15 @@ JNICALL
 Java_ca_psiphon_psicashlib_PsiCashLib_NativeGetPurchasesByAuthorizationID(
         JNIEnv* env,
         jobject /*this_obj*/,
-        jobjectArray authorization_ids) {
+        jobjectArray authorization_ids)
+{
     if (!authorization_ids) {
-        return JNI_s(SuccessResponse());
+        return JNI_(SuccessResponse());
     }
 
     int id_count = env->GetArrayLength(authorization_ids);
     if (id_count == 0) {
-        return JNI_s(SuccessResponse());
+        return JNI_(SuccessResponse());
     }
 
     vector<string> ids;
@@ -189,7 +217,7 @@ Java_ca_psiphon_psicashlib_PsiCashLib_NativeGetPurchasesByAuthorizationID(
     }
 
     auto purchases = GetPsiCash().GetPurchasesByAuthorizationID(ids);
-    return JNI_s(SuccessResponse(purchases));
+    return JNI_(SuccessResponse(purchases));
 }
 
 extern "C" JNIEXPORT jstring
@@ -197,7 +225,8 @@ JNICALL
 Java_ca_psiphon_psicashlib_PsiCashLib_NativeDecodeAuthorization(
         JNIEnv* env,
         jclass /*type*/, // jclass and not jobject because it's a static call
-        jstring j_encoded_authorization) {
+        jstring j_encoded_authorization)
+{
     auto encoded_authorization = JStringToString(env, j_encoded_authorization);
     if (!encoded_authorization) {
         return JNI_(ERROR_CRITICAL("encoded authorization is required"));
@@ -207,31 +236,33 @@ Java_ca_psiphon_psicashlib_PsiCashLib_NativeDecodeAuthorization(
     if (!result) {
         return JNI_(WRAP_ERROR(result.error()));
     }
-    return JNI_s(SuccessResponse(*result));
+    return JNI_(SuccessResponse(*result));
 }
 
 extern "C" JNIEXPORT jstring
 JNICALL
 Java_ca_psiphon_psicashlib_PsiCashLib_NativeNextExpiringPurchase(
         JNIEnv* env,
-        jobject /*this_obj*/) {
+        jobject /*this_obj*/)
+{
     auto p = GetPsiCash().NextExpiringPurchase();
     if (!p) {
-        return JNI_s(SuccessResponse(nullptr));
+        return JNI_(SuccessResponse(nullptr));
     }
-    return JNI_s(SuccessResponse(*p));
+    return JNI_(SuccessResponse(*p));
 }
 
 extern "C" JNIEXPORT jstring
 JNICALL
 Java_ca_psiphon_psicashlib_PsiCashLib_NativeExpirePurchases(
         JNIEnv* env,
-        jobject /*this_obj*/) {
+        jobject /*this_obj*/)
+{
     auto result = GetPsiCash().ExpirePurchases();
     if (!result) {
         return JNI_(WRAP_ERROR(result.error()));
     }
-    return JNI_s(SuccessResponse(*result));
+    return JNI_(SuccessResponse(*result));
 }
 
 extern "C" JNIEXPORT jstring
@@ -239,14 +270,15 @@ JNICALL
 Java_ca_psiphon_psicashlib_PsiCashLib_NativeRemovePurchases(
         JNIEnv* env,
         jobject /*this_obj*/,
-        jobjectArray transaction_ids) {
+        jobjectArray transaction_ids)
+{
     if (!transaction_ids) {
-        return JNI_s(SuccessResponse());
+        return JNI_(SuccessResponse());
     }
 
     int id_count = env->GetArrayLength(transaction_ids);
     if (id_count == 0) {
-        return JNI_s(SuccessResponse());
+        return JNI_(SuccessResponse());
     }
 
     vector<TransactionID> ids;
@@ -261,7 +293,7 @@ Java_ca_psiphon_psicashlib_PsiCashLib_NativeRemovePurchases(
     if (!result) {
         return JNI_(WRAP_ERROR(result.error()));
     }
-    return JNI_s(SuccessResponse(*result));
+    return JNI_(SuccessResponse(*result));
 }
 
 extern "C" JNIEXPORT jstring
@@ -269,7 +301,8 @@ JNICALL
 Java_ca_psiphon_psicashlib_PsiCashLib_NativeModifyLandingPage(
         JNIEnv* env,
         jobject /*this_obj*/,
-        jstring j_url) {
+        jstring j_url)
+{
     auto url = JStringToString(env, j_url);
     if (!url) {
         return JNI_(ERROR_CRITICAL("url is required"));
@@ -279,28 +312,74 @@ Java_ca_psiphon_psicashlib_PsiCashLib_NativeModifyLandingPage(
     if (!result) {
         return JNI_(WRAP_ERROR(result.error()));
     }
-    return JNI_s(SuccessResponse(*result));
+    return JNI_(SuccessResponse(*result));
+}
+
+extern "C" JNIEXPORT jstring
+JNICALL
+Java_ca_psiphon_psicashlib_PsiCashLib_NativeGetAccountSignupURL(
+        JNIEnv* env,
+        jobject /*this_obj*/)
+{
+    auto result = GetPsiCash().GetUserSiteURL(psicash::PsiCash::UserSiteURLType::AccountSignup, true);
+    return JNI_(result);
+}
+
+extern "C" JNIEXPORT jstring
+JNICALL
+Java_ca_psiphon_psicashlib_PsiCashLib_NativeGetAccountForgotURL(
+        JNIEnv* env,
+        jobject /*this_obj*/)
+{
+    auto result = GetPsiCash().GetUserSiteURL(psicash::PsiCash::UserSiteURLType::ForgotAccount, true);
+    return JNI_(result);
+}
+
+extern "C" JNIEXPORT jstring
+JNICALL
+Java_ca_psiphon_psicashlib_PsiCashLib_NativeGetAccountManagementURL(
+        JNIEnv* env,
+        jobject /*this_obj*/)
+{
+    auto result = GetPsiCash().GetUserSiteURL(psicash::PsiCash::UserSiteURLType::AccountManagement, true);
+    return JNI_(result);
+}
+
+extern "C" JNIEXPORT jstring
+JNICALL
+Java_ca_psiphon_psicashlib_PsiCashLib_NativeGetAccountUsername(
+        JNIEnv* env,
+        jobject /*this_obj*/)
+{
+    auto result = GetPsiCash().AccountUsername();
+    if (!result) {
+        return JNI_(SuccessResponse(nullptr));
+    }
+    return JNI_(SuccessResponse(*result));
 }
 
 extern "C" JNIEXPORT jstring
 JNICALL
 Java_ca_psiphon_psicashlib_PsiCashLib_NativeGetRewardedActivityData(
         JNIEnv* env,
-        jobject /*this_obj*/) {
+        jobject /*this_obj*/)
+{
     auto result = GetPsiCash().GetRewardedActivityData();
     if (!result) {
         return JNI_(WRAP_ERROR(result.error()));
     }
-    return JNI_s(SuccessResponse(*result));
+    return JNI_(SuccessResponse(*result));
 }
 
 extern "C" JNIEXPORT jstring
 JNICALL
 Java_ca_psiphon_psicashlib_PsiCashLib_NativeGetDiagnosticInfo(
         JNIEnv* env,
-        jobject /*this_obj*/) {
-    auto json = GetPsiCash().GetDiagnosticInfo();
-    return JNI_s(SuccessResponse(json.dump(-1, ' ', true)));
+        jobject /*this_obj*/,
+        jboolean lite)
+{
+    auto json = GetPsiCash().GetDiagnosticInfo(lite);
+    return JNI_(SuccessResponse(json.dump(-1, ' ', true)));
 }
 
 /*
@@ -318,7 +397,9 @@ JNICALL
 Java_ca_psiphon_psicashlib_PsiCashLib_NativeRefreshState(
         JNIEnv* env,
         jobject this_obj,
-        jobjectArray j_purchase_classes) {
+        jboolean local_only,
+        jobjectArray j_purchase_classes)
+{
     vector<string> purchase_classes;
 
     int purchase_classes_count = env->GetArrayLength(j_purchase_classes);
@@ -331,12 +412,14 @@ Java_ca_psiphon_psicashlib_PsiCashLib_NativeRefreshState(
 
     GetPsiCash().SetHTTPRequestFn(GetHTTPReqFn(env, this_obj));
 
-    auto result = GetPsiCash().RefreshState(purchase_classes);
+    auto result = GetPsiCash().RefreshState(local_only, purchase_classes);
     if (!result) {
         return JNI_(WRAP_ERROR(result.error()));
     }
 
-    return JNI_s(SuccessResponse(*result));
+    auto output = json::object({{"status",             result->status},
+                                {"reconnect_required", result->reconnect_required}});
+    return JNI_(SuccessResponse(output));
 }
 
 /*
@@ -356,7 +439,8 @@ Java_ca_psiphon_psicashlib_PsiCashLib_NativeNewExpiringPurchase(
         jobject this_obj,
         jstring j_transaction_class,
         jstring j_distinguisher,
-        jlong j_expected_price) {
+        jlong j_expected_price)
+{
     auto transaction_class = JStringToString(env, j_transaction_class);
     auto distinguisher = JStringToString(env, j_distinguisher);
     int64_t expected_price = j_expected_price;
@@ -378,5 +462,63 @@ Java_ca_psiphon_psicashlib_PsiCashLib_NativeNewExpiringPurchase(
         output["purchase"] = *result->purchase;
     }
 
-    return JNI_s(SuccessResponse(output));
+    return JNI_(SuccessResponse(output));
+}
+
+extern "C" JNIEXPORT jstring
+JNICALL
+Java_ca_psiphon_psicashlib_PsiCashLib_NativeAccountLogout(
+        JNIEnv* env,
+        jobject this_obj)
+{
+    GetPsiCash().SetHTTPRequestFn(GetHTTPReqFn(env, this_obj));
+
+    auto result = GetPsiCash().AccountLogout();
+    if (!result) {
+        return JNI_(WRAP_ERROR(result.error()));
+    }
+
+    auto output = json::object({{"reconnect_required", result->reconnect_required}});
+    return JNI_(SuccessResponse(output));
+}
+
+/*
+ * Response JSON structure is:
+ * {
+ *      error: { ... },
+ *      result: {
+ *          status: Status value,
+ *          last_tracker_merge: *boolean; non-null iff status == Status::Success and tracker tokens were provided
+ *      }
+ * }
+ */
+extern "C" JNIEXPORT jstring
+JNICALL
+Java_ca_psiphon_psicashlib_PsiCashLib_NativeAccountLogin(
+        JNIEnv* env,
+        jobject this_obj,
+        jstring j_username,
+        jstring j_password)
+{
+    auto utf8_username = JStringToString(env, j_username);
+    auto utf8_password = JStringToString(env, j_password);
+
+    if (!utf8_username || !utf8_password) {
+        return JNI_(ERROR_CRITICAL("username and password are required"));
+    }
+
+    GetPsiCash().SetHTTPRequestFn(GetHTTPReqFn(env, this_obj));
+
+    auto result = GetPsiCash().AccountLogin(*utf8_username, *utf8_password);
+    if (!result) {
+        return JNI_(WRAP_ERROR(result.error()));
+    }
+
+    auto output = json::object({{"status",             result->status},
+                                {"last_tracker_merge", nullptr}});
+    if (result->last_tracker_merge) {
+        output["last_tracker_merge"] = *result->last_tracker_merge;
+    }
+
+    return JNI_(SuccessResponse(output));
 }

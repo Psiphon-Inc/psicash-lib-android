@@ -58,20 +58,76 @@ bool CheckJNIException(JNIEnv* env) {
     return false;
 }
 
-std::function<void(const char*)> StringUTFDeleter(JNIEnv* env, jstring j_param) {
-    return [=](const char* s) { env->ReleaseStringUTFChars(j_param, s); };
-}
-
-template<typename T>
-using deleted_unique_ptr = std::unique_ptr<T, std::function<void(T*)>>;
-
 nonstd::optional<std::string> JStringToString(JNIEnv* env, jstring j_s) {
     if (!j_s) {
         return nonstd::nullopt;
     }
 
-    deleted_unique_ptr<const char> s(env->GetStringUTFChars(j_s, NULL), StringUTFDeleter(env, j_s));
-    return std::string(s.get());
+    // JNI's GetStringUTFChars doesn't really give UTF-8 but "modified UTF-8". We don't
+    // want to be sending that through to the core library and the server, so we'll need
+    // to make some special effort. For details, see: https://stackoverflow.com/a/32215302
+
+    const jclass stringClass = env->GetObjectClass(j_s);
+    const jmethodID getBytes = env->GetMethodID(stringClass, "getBytes", "(Ljava/lang/String;)[B");
+
+    const jstring charsetName = env->NewStringUTF("UTF-8");
+    const jbyteArray stringJbytes = (jbyteArray)env->CallObjectMethod(j_s, getBytes, charsetName);
+    env->DeleteLocalRef(charsetName);
+
+    const jsize length = env->GetArrayLength(stringJbytes);
+    jbyte* pBytes = env->GetByteArrayElements(stringJbytes, NULL);
+
+    std::string res((char*)pBytes, length);
+
+    env->ReleaseByteArrayElements(stringJbytes, pBytes, JNI_ABORT);
+    env->DeleteLocalRef(stringJbytes);
+
+    return res;
+}
+
+nonstd::optional<std::map<std::string, std::string>> JMapToStdMapStrings(JNIEnv* env, jobject j_map) {
+    if (!j_map) {
+        return nonstd::nullopt;
+    }
+
+    jclass mapClass = env->FindClass("java/util/Map");
+    jclass setClass = env->FindClass("java/util/Set");
+    jclass iteratorClass = env->FindClass("java/util/Iterator");
+    jclass entryClass = env->FindClass("java/util/Map$Entry");
+
+    jmethodID entrySet = env->GetMethodID(mapClass, "entrySet", "()Ljava/util/Set;");
+    jmethodID iterator = env->GetMethodID(setClass, "iterator", "()Ljava/util/Iterator;");
+
+    jmethodID hasNext = env->GetMethodID(iteratorClass, "hasNext", "()Z");
+    jmethodID next = env->GetMethodID(iteratorClass, "next", "()Ljava/lang/Object;");
+    jmethodID getKey = env->GetMethodID(entryClass, "getKey", "()Ljava/lang/Object;");
+    jmethodID getValue = env->GetMethodID(entryClass, "getValue", "()Ljava/lang/Object;");
+
+    jobject set = env->CallObjectMethod(j_map, entrySet);
+    jobject iter = env->CallObjectMethod(set, iterator);
+
+    std::map<std::string, std::string> result;
+
+    while (env->CallBooleanMethod(iter, hasNext)) {
+        jobject entry = env->CallObjectMethod(iter, next);
+        jstring jKey = (jstring)env->CallObjectMethod(entry, getKey);
+        jstring jValue = (jstring)env->CallObjectMethod(entry, getValue);
+        auto keyStr = JStringToString(env, jKey);
+        auto valueStr = JStringToString(env, jValue);
+        if (keyStr && valueStr) {
+            result.insert(std::make_pair(*keyStr, *valueStr));
+        }
+        env->DeleteLocalRef(entry);
+    }
+    return result;
+}
+
+jstring JNIify(JNIEnv* env, const char* str) {
+    return str ? env->NewStringUTF(str) : nullptr;
+}
+
+jstring JNIify(JNIEnv* env, const std::string& str) {
+    return !str.empty() ? env->NewStringUTF(str.c_str()) : nullptr;
 }
 
 string ErrorResponseFallback(const string& message) {
@@ -128,7 +184,8 @@ psicash::MakeHTTPRequestFn GetHTTPReqFn(JNIEnv* env, jobject& this_obj) {
                 {"method", params.method},
                 {"path", params.path},
                 {"headers", params.headers},
-                {"query", params.query}};
+                {"query", params.query},
+                {"body", params.body}};
 
             params_json = j.dump(-1, ' ', true);
         }
@@ -169,8 +226,8 @@ psicash::MakeHTTPRequestFn GetHTTPReqFn(JNIEnv* env, jobject& this_obj) {
                 result.body = j["body"].get<string>();
             }
 
-            if (!j["date"].is_null()) {
-                result.date = j["date"].get<string>();
+            if (!j["headers"].is_null()) {
+                result.headers = j["headers"].get<map<string, vector<string>>>();
             }
 
             if (!j["error"].is_null()) {
