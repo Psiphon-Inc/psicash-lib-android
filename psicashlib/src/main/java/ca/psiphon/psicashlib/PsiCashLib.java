@@ -1675,18 +1675,23 @@ public class PsiCashLib {
             Date date;
 
             // We need to try different formats depending on the presence of milliseconds.
-            SimpleDateFormat isoFormatWithMS = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SSS'Z'", Locale.US);
+            // Note that we are setting parsing mode to strict (`setLenient(false)`) since
+            // lenient parsing may produce incorrect output if the input date string is
+            // not formatted exactly as expected.
+            SimpleDateFormat isoFormatWithMS = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US);
             isoFormatWithMS.setTimeZone(TimeZone.getTimeZone("UTC"));
+            isoFormatWithMS.setLenient(false);
             try {
                 date = isoFormatWithMS.parse(dateString);
             } catch (ParseException e1) {
-                SimpleDateFormat isoFormatWithoutMS = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss'Z'", Locale.US);
+                SimpleDateFormat isoFormatWithoutMS = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
                 isoFormatWithMS.setTimeZone(TimeZone.getTimeZone("UTC"));
+                isoFormatWithMS.setLenient(false);
                 try {
                     date = isoFormatWithoutMS.parse(dateString);
                 } catch (ParseException e2) {
                     // Should not happen. No way to recover.
-                    throw new JSONException("Failed to parse date with key " + key + "; error: " + e2.toString());
+                    throw new JSONException("Failed to parse date with key " + key + "; error: " + e2);
                 }
             }
 
